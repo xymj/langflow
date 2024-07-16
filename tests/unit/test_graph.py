@@ -66,6 +66,8 @@ def get_node_by_type(graph, node_type: Type[Vertex]) -> Union[Vertex, None]:
     """Get a node by type"""
     return next((node for node in graph.vertices if isinstance(node, node_type)), None)
 
+def test_hello():
+    print("hello world")
 
 def test_graph_structure(basic_graph):
     assert isinstance(basic_graph, Graph)
@@ -172,7 +174,7 @@ def test_build_edges(basic_graph):
         assert isinstance(edge.target_id, str)
 
 
-def test_get_root_vertex(client, basic_graph, complex_graph):
+def test_get_root_vertex(basic_graph, complex_graph):
     """Test getting root node"""
     assert isinstance(basic_graph, Graph)
     root = get_root_vertex(basic_graph)

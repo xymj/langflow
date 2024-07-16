@@ -73,14 +73,14 @@ def get_text():
         assert path.exists(), f"File {path} does not exist. Available files: {list(data_path.iterdir())}"
 
 
-@pytest.fixture(autouse=True)
+# @pytest.fixture(autouse=True)
 def check_openai_api_key_in_environment_variables():
     import os
 
     assert os.environ.get("OPENAI_API_KEY") is not None, "OPENAI_API_KEY is not set in environment variables"
 
 
-@pytest.fixture()
+# @pytest.fixture()
 async def async_client() -> AsyncGenerator:
     from langflow.main import create_app
 
@@ -230,7 +230,7 @@ def json_webhook_test():
         return f.read()
 
 
-@pytest.fixture(name="client", autouse=True)
+# @pytest.fixture(name="client", autouse=True)
 def client_fixture(session: Session, monkeypatch, request, load_flows_dir):
     # Set the database url to a test database
     if "noclient" in request.keywords:

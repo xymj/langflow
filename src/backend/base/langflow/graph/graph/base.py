@@ -297,7 +297,7 @@ class Graph:
         Returns:
             List[Optional["ResultData"]]: The outputs of the graph.
         """
-
+        # 3.6 对每种输入类型，真正执行图的方法
         if input_components and not isinstance(input_components, list):
             raise ValueError(f"Invalid components value: {input_components}. Expected list")
         elif input_components is None:
@@ -306,6 +306,7 @@ class Graph:
         if not isinstance(inputs.get(INPUT_FIELD_NAME, ""), str):
             raise ValueError(f"Invalid input value: {inputs.get(INPUT_FIELD_NAME)}. Expected string")
         if inputs:
+            # 3.7 如果输入不为空，遍历图内所有接受输入内容的节点
             for vertex_id in self._is_input_vertices:
                 vertex = self.get_vertex(vertex_id)
                 # If the vertex is not in the input_components list
@@ -319,6 +320,7 @@ class Graph:
                     continue
                 if vertex is None:
                     raise ValueError(f"Vertex {vertex_id} not found")
+                # 3.8 更新节点vertex内_raw_params和params参数
                 vertex.update_raw_params(inputs, overwrite=True)
         # Update all the vertices with the session_id
         for vertex_id in self._has_session_id_vertices:
@@ -335,9 +337,12 @@ class Graph:
             logger.exception(exc)
 
         try:
+            # 3.8 从input列表内查找图的起始输入节点
             start_component_id = next(
                 (vertex_id for vertex_id in self._is_input_vertices if "chat" in vertex_id.lower()), None
             )
+
+            # 3.9 从起始节点开始，处理图
             await self.process(start_component_id=start_component_id, fallback_to_env_vars=fallback_to_env_vars)
             self.increment_run_count()
         except Exception as exc:
@@ -387,6 +392,7 @@ class Graph:
         # run the async function in a sync way
         # this could be used in a FastAPI endpoint
         # so we should take care of the event loop
+        # 3.3 图的异步执行方法
         coro = self.arun(
             inputs=inputs,
             inputs_components=input_components,
@@ -407,6 +413,7 @@ class Graph:
             return asyncio.run(coro)
 
         # If there's an existing, open event loop, use it to run the async function
+        # 3.？ 等待图的异步执行完成
         return loop.run_until_complete(coro)
 
     async def arun(
@@ -436,7 +443,11 @@ class Graph:
         # we need to go through self.inputs and update the self._raw_params
         # of the vertices that are inputs
         # if the value is a list, we need to run multiple times
+        # 3.4 使用给定的输入运行图
+        # 收集节点执行输出
         vertex_outputs = []
+
+        # 构建执行前所需参数
         if not isinstance(inputs, list):
             inputs = [inputs]
         elif not inputs:
@@ -451,6 +462,8 @@ class Graph:
             types = []
         for _ in range(len(inputs) - len(types)):
             types.append("chat")  # default to chat
+
+        # 3.5 对构建好的入参列表，构建时会把inputs、inputs_components、types长度保持一致，对每个元素展开，然后执行图
         for run_inputs, components, input_type in zip(inputs, inputs_components, types):
             run_outputs = await self._run(
                 inputs=run_inputs,
@@ -835,6 +848,7 @@ class Graph:
         fallback_to_env_vars: bool = False,
     ):
         """
+        在图中构建一个顶点
         Builds a vertex in the graph.
 
         Args:
@@ -926,9 +940,10 @@ class Graph:
 
     async def process(self, fallback_to_env_vars: bool, start_component_id: Optional[str] = None) -> "Graph":
         """Processes the graph with vertices in each layer run in parallel."""
-
+        # 3.10 对每层没有相互依赖的节点并行处理图
         first_layer = self.sort_vertices(start_component_id=start_component_id)
         vertex_task_run_count: Dict[str, int] = {}
+        # 3.17 第一层可执行节点入队列
         to_process = deque(first_layer)
         layer_index = 0
         chat_service = get_chat_service()
@@ -937,13 +952,16 @@ class Graph:
         self.set_run_name()
         await self.initialize_run()
         lock = chat_service._cache_locks[self.run_id]
+        # 3.18 逐层进队列，出队列处理
         while to_process:
             current_batch = list(to_process)  # Copy current deque items to a list
             to_process.clear()  # Clear the deque for new items
             tasks = []
             for vertex_id in current_batch:
                 vertex = self.get_vertex(vertex_id)
+                # 3.19 同层级多个节点创建多个异步执行任务
                 task = asyncio.create_task(
+                    # 构建执行单节点
                     self.build_vertex(
                         chat_service=chat_service,
                         vertex_id=vertex_id,
@@ -958,13 +976,17 @@ class Graph:
 
             logger.debug(f"Running layer {layer_index} with {len(tasks)} tasks")
             try:
+                # 3.20 等待当前层级所有节点并行执行异步任务都异步执行成功，返回下一层级可执行节点列表
                 next_runnable_vertices = await self._execute_tasks(tasks, lock=lock)
             except Exception as e:
                 logger.error(f"Error executing tasks in layer {layer_index}: {e}")
                 raise e
+            # 如果下一层级节点不存在，图执行结束
             if not next_runnable_vertices:
                 break
+            # 下一层级节点入队列
             to_process.extend(next_runnable_vertices)
+            # 图执行层级计数加一
             layer_index += 1
 
         logger.debug("Graph processing complete")
@@ -1184,6 +1206,7 @@ class Graph:
 
     def sort_up_to_vertex(self, vertex_id: str, is_start: bool = False) -> List[Vertex]:
         """Cuts the graph up to a given vertex and sorts the resulting subgraph."""
+        # 将图切割到给定顶点并对结果子图进行排序
         # Initial setup
         visited = set()  # To keep track of visited vertices
         excluded = set()  # To keep track of vertices that should be excluded
@@ -1383,11 +1406,15 @@ class Graph:
         start_component_id: Optional[str] = None,
     ) -> List[str]:
         """Sorts the vertices in the graph."""
+        # 3.11 对图节点分层，并排序
+        #   所有图下节点置为激活状态
         self.mark_all_vertices("ACTIVE")
         if stop_component_id is not None:
             self.stop_vertex = stop_component_id
+            # 从结束节点开始排序，寻找所有与结束节点相连接的节点列表
             vertices = self.sort_up_to_vertex(stop_component_id)
         elif start_component_id:
+            # 从开始节点开始排序，寻找所有与开始节点相连接的节点列表
             vertices = self.sort_up_to_vertex(start_component_id, is_start=True)
         else:
             vertices = self.vertices
@@ -1395,18 +1422,24 @@ class Graph:
             # so we want to pick only graphs that start with ChatInput or
             # TextInput
 
+        # 3.12 对图中的顶点执行分层拓扑排序
         vertices_layers = self.layered_topological_sort(vertices)
+        # 3.13 对图中的顶点进行排序，使平均构建时间最短的顶点排在最前面。
         vertices_layers = self.sort_by_avg_build_time(vertices_layers)
         # vertices_layers = self.sort_chat_inputs_first(vertices_layers)
         # Now we should sort each layer in a way that we make sure
         # vertex V does not depend on vertex V+1
+        # 3.14 按依赖关系对每层中的顶点进行排序，确保没有顶点依赖于后续顶点。
         vertices_layers = self.sort_layer_by_dependency(vertices_layers)
         self.increment_run_count()
         self._sorted_vertices_layers = vertices_layers
         first_layer = vertices_layers[0]
         # save the only the rest
         self.vertices_layers = vertices_layers[1:]
+        # 3.15 各层节点拍平展开，按照每层级节点顺序，逐层放入到一个列表vertices_to_run中（chain.from_iterable扁平化嵌套的可迭代对象）
         self.vertices_to_run = {vertex_id for vertex_id in chain.from_iterable(vertices_layers)}
+        # 3.16 为图表构建运行图。
+        #      该方法负责构建图的运行图，将图中的每个节点映射到其对应的运行函数。
         self.build_run_map()
         # Return just the first layer
         return first_layer

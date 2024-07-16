@@ -24,7 +24,9 @@ async def instantiate_class(
     fallback_to_env_vars,
     user_id=None,
 ) -> Any:
-    """Instantiate class from module type and key, and params"""
+    """Instantiate class from module type and key, and params
+        "根据模块类型和键以及参数实例化类
+    """
 
     vertex_type = vertex.vertex_type
     base_type = vertex.base_type
@@ -36,6 +38,7 @@ async def instantiate_class(
     if not base_type:
         raise ValueError("No base type provided for vertex")
 
+    # 图节点component真正构建执行的地方
     custom_component, build_results, artifacts = await build_component_and_get_results(
         params=params,
         vertex=vertex,
@@ -58,6 +61,7 @@ async def build_component_and_get_results(
     params_copy = params.copy()
     # Remove code from params
     class_object: Type["CustomComponent" | "Component"] = eval_custom_component_code(params_copy.pop("code"))
+    # 需要确定下构造函数传递的parameters dict是否被展开，还是parameters这个字段，然后对应字典
     custom_component: "CustomComponent" | "Component" = class_object(
         user_id=user_id, parameters=params_copy, vertex=vertex, _tracing_service=tracing_service
     )

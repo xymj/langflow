@@ -69,6 +69,7 @@ class CustomComponent(BaseComponent):
     """The field order of the component. Defaults to an empty list."""
     frozen: Optional[bool] = False
     """The default frozen state of the component. Defaults to False."""
+    # 需要查看此处参数注入值
     build_parameters: Optional[dict] = None
     """The build parameters of the component. Defaults to None."""
     vertex: Optional["Vertex"] = None
@@ -126,6 +127,7 @@ class CustomComponent(BaseComponent):
     def __init__(self, **data):
         """
         Initializes a new instance of the CustomComponent class.
+        初始化 CustomComponent 类的新实例
 
         Args:
             **data: Additional keyword arguments to initialize the custom component.

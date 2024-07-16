@@ -408,6 +408,7 @@ class Vertex:
     ):
         """
         Initiate the build process.
+        启动构建过程。
         """
         logger.debug(f"Building {self.display_name}")
         await self._build_each_vertex_in_params_dict(user_id)
@@ -467,6 +468,7 @@ class Vertex:
     async def _build_each_vertex_in_params_dict(self, user_id=None):
         """
         Iterates over each vertex in the params dictionary and builds it.
+        迭代 params 字典中的每个顶点并构建它。
         """
         for key, value in self._raw_params.items():
             if self._is_vertex(value):
@@ -522,6 +524,8 @@ class Vertex:
 
         Returns:
             The result of the vertex.
+
+            检索顶点的结果。这是一种只读方法，因此如果尚未构建顶点，则会引发错误。
         """
         async with self._lock:
             return await self._get_result(requester)
@@ -547,8 +551,10 @@ class Vertex:
     async def _build_vertex_and_update_params(self, key, vertex: "Vertex"):
         """
         Builds a given vertex and updates the params dictionary accordingly.
+        构建给定的顶点并相应地更新参数字典。
         """
 
+        # 获取source源节点结果，即前驱节点结果
         result = await vertex.get_result(self)
         self._handle_func(key, result)
         if isinstance(result, list):
@@ -611,6 +617,7 @@ class Vertex:
     async def _get_and_instantiate_class(self, user_id=None, fallback_to_env_vars=False):
         """
         Gets the class from a dictionary and instantiates it with the params.
+        从字典中获取类并使用参数实例化它。
         """
         if self.base_type is None:
             raise ValueError(f"Base type for vertex {self.display_name} not found")
@@ -690,6 +697,7 @@ class Vertex:
                 return
 
             if self.frozen and self._built:
+                # 当前节点结果设置到目标节点requester(请求者)对应的params内
                 return self.get_requester_result(requester)
             elif self._built and requester is not None:
                 # This means that the vertex has already been built

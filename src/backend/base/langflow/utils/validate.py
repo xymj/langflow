@@ -149,6 +149,7 @@ def create_function(code, function_name):
 def create_class(code, class_name):
     """
     Dynamically create a class from a string of code and a specified class name.
+    从一串代码和指定的类名动态创建一个类。
 
     :param code: String containing the Python code defining the class
     :param class_name: Name of the class to be created
@@ -188,6 +189,7 @@ def create_type_ignore_class():
 def prepare_global_scope(code, module):
     """
     Prepares the global scope with necessary imports from the provided code module.
+    通过从提供的代码模块中进行必要的导入来准备全局范围
 
     :param module: AST parsed module
     :return: Dictionary representing the global scope with imported modules

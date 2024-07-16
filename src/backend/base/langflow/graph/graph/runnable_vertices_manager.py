@@ -69,8 +69,11 @@ class RunnableVerticesManager:
         self.run_map = defaultdict(list)
         for vertex_id, predecessors in graph.predecessor_map.items():
             for predecessor in predecessors:
+                # run_map存储每一个节点对应的所有后置执行节点列表
                 self.run_map[predecessor].append(vertex_id)
+        # run_predecessors存储每一个节点对应的所有前置执行节点列表
         self.run_predecessors = graph.predecessor_map.copy()
+        # vertices_to_run存储按照顺序执行的所有可达节点
         self.vertices_to_run = graph.vertices_to_run
 
     def update_vertex_run_state(self, vertex_id: str, is_runnable: bool):

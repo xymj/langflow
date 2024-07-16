@@ -114,6 +114,7 @@ def run_flow_from_json(
     if tweaks is None:
         tweaks = {}
     tweaks["stream"] = False
+    # 2 从配置json文件构建图
     graph = load_flow_from_json(
         flow=flow,
         tweaks=tweaks,
@@ -123,6 +124,7 @@ def run_flow_from_json(
         cache=cache,
         disable_logs=disable_logs,
     )
+    # 3 执行图
     result = run_graph(
         graph=graph,
         input_value=input_value,

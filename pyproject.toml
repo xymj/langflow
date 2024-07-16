@@ -26,6 +26,7 @@ langflow = "langflow.__main__:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
+chroma-hnswlib = { path = "/Users/liujiangtao/Documents/stu_code/stu_ai/chroma-hnswlib-0.7.3/dist/chroma_hnswlib-0.7.3-cp311-cp311-macosx_10_9_x86_64.whl" }
 langflow-base = { path = "./src/backend/base", develop = true }
 beautifulsoup4 = "^4.12.2"
 google-search-results = "^2.4.1"

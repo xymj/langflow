@@ -67,7 +67,7 @@
     "rehype-mathjax": "^4.0.3",
     "remark-gfm": "3.0.1",
     "remark-math": "^6.0.0",
-    "shadcn-ui": "^0.8.0",
+    "shadcn-ui": "^0.2.3",
     "short-unique-id": "^5.2.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

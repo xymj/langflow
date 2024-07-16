@@ -7,6 +7,8 @@ if TYPE_CHECKING:
 
 
 def eval_custom_component_code(code: str) -> Type["CustomComponent"]:
-    """Evaluate custom component code"""
+    """Evaluate custom component code
+        评估自定义组件代码
+    """
     class_name = validate.extract_class_name(code)
     return validate.create_class(code, class_name)

@@ -79,10 +79,12 @@ def run_graph(
         List[RunOutputs]: A list of RunOutputs objects representing the outputs of the graph.
 
     """
+    # 3.1 构造InputValue入参  components=[], input_value="test", input_type="chat", output_type="chat"
     inputs = [InputValue(components=[], input_value=input_value, type=input_type)]
     if output_component:
         outputs = [output_component]
     else:
+        # 收集有output类型的节点
         outputs = [
             vertex.id
             for vertex in graph.vertices
@@ -99,6 +101,7 @@ def run_graph(
         components.append(input_value_request.components or [])
         inputs_list.append({INPUT_FIELD_NAME: input_value_request.input_value})
         types.append(input_value_request.type)
+    # 3.2 执行图
     run_outputs = graph.run(
         inputs_list,
         components,
