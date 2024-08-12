@@ -1,5 +1,12 @@
 import { LoadingComponentProps } from "../../types/components";
 
+/**
+ * 
+ * 这段代码定义了一个名为LoadingComponent的React函数组件，它接受一个对象参数，该对象包含一个名为remSize的属性，
+ * 类型为LoadingComponentProps。这里的LoadingComponentProps应该是在别处定义的TypeScript接口或类型，用于精确描述传入LoadingComponent的所有合法属性。
+ * @param remSize: 这个属性看起来是用来控制加载组件大小的，单位是“rem”。在网页设计中，“rem”是一种相对单位，代表相对于根元素（通常是html标签）字体大小的比例。所以，remSize很可能是为了调整加载动画的大小，使其能更好地适应不同的屏幕或布局需求。
+ * @returns JSX.Element: 这表明LoadingComponent返回的是一个React元素，也就是可以被React识别并在DOM中渲染的虚拟节点。这意味着LoadingComponent内部将包含一些HTML-like的结构，用于呈现加载动画或指示器。
+ */
 export default function LoadingComponent({
   remSize,
 }: LoadingComponentProps): JSX.Element {
