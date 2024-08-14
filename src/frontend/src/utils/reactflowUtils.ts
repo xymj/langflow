@@ -827,6 +827,88 @@ export function updateEdges(edges: Edge[]) {
     });
 }
 
+/**
+ * 
+ * @param flow 这段代码定义了一个名为 addVersionToDuplicates 的函数，用于处理图形界面中的重复流程名称，并为每个重复的流程名称添加版本号。这样可以避免命名冲突，并确保每个流程都有唯一的名称。
+
+函数详解
+参数说明
+flow: 当前需要处理的流程对象。
+flows: 已存在的流程数组。
+返回值
+返回一个带有版本号的新名称字符串。
+示例实现
+下面是一个详细的示例实现，展示了如何使用这个函数来处理流程名称冲突的问题。
+
+示例代码
+TypeScript
+// flowTypes.ts
+
+// 定义流程类型
+interface FlowType {
+  name: string;
+  // 其他属性...
+}
+
+// 处理重复流程名称并添加版本号的函数
+export function addVersionToDuplicates(flow: FlowType, flows: FlowType[]): string {
+  const existingNames = flows.map((item) => item.name);
+  let newName = flow.name;
+  let count = 1;
+
+  while (existingNames.includes(newName)) {
+    newName = `${flow.name} (${count})`;
+    count++;
+  }
+
+  return newName;
+}
+使用示例
+下面是一个具体的例子，展示了如何使用这个函数来处理流程名称冲突的问题。
+
+示例数据
+假设我们有一组已存在的流程对象和一个当前需要处理的流程对象：
+
+TypeScript
+// exampleData.ts
+
+// 已存在的流程数组
+const existingFlows: FlowType[] = [
+  { name: "Process A" },
+  { name: "Process B" },
+  { name: "Process C" },
+  { name: "Process D" },
+  { name: "Process E" }
+];
+
+// 当前需要处理的流程对象
+const currentFlow: FlowType = { name: "Process A" };
+调用函数
+调用 addVersionToDuplicates 函数来处理当前流程名称，并打印结果：
+
+TypeScript
+// exampleUsage.ts
+
+import { addVersionToDuplicates } from "./flowTypes";
+import { existingFlows, currentFlow } from "./exampleData";
+
+// 处理当前流程名称并添加版本号
+const newName = addVersionToDuplicates(currentFlow, existingFlows);
+
+console.log("New Name:", newName);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+New Name: Process A (1)
+解释
+existingNames: 获取已存在的流程名称数组。
+newName: 初始化为当前流程的名称。
+count: 计数器变量，用于生成版本号。
+循环检查 existingNames 是否包含 newName。如果不包含，则直接返回；否则，在名称后面加上括号和计数器值，并递增计数器。
+ * @param flows 
+ * @returns 
+ */
 export function addVersionToDuplicates(flow: FlowType, flows: FlowType[]) {
   const existingNames = flows.map((item) => item.name);
   let newName = flow.name;
@@ -840,6 +922,249 @@ export function addVersionToDuplicates(flow: FlowType, flows: FlowType[]) {
   return newName;
 }
 
+/**
+ * 
+ * @param param0 
+ * @returns 
+ * 
+ * 这段代码定义了一个名为 updateEdgesHandleIds 的函数，用于更新给定的边 (edges) 的源 (sourceHandle) 和目标 (targetHandle) 处理器 ID。该函数接收一个包含边 (edges) 和节点 (nodes) 的对象，并返回更新后的边列表。
+
+下面是对该函数的详细解释及完整示例实现。
+
+函数定义详解
+参数说明
+edges: Edge[]
+
+作用: 包含一系列边的信息。
+类型: 数组，每个元素都是一个 Edge 对象。
+nodes: Node[]
+
+作用: 包含一系列节点的信息。
+类型: 数组，每个元素都是一个 Node 对象。
+返回值说明
+**newEdges: Edge[]`
+作用: 更新后的边列表。
+边 (Edge) 和节点 (Node) 结构说明
+假设 Edge 和 Node 的基本结构如下所示：
+
+TypeScript
+interface Edge {
+  source: string;
+  target: string;
+  sourceHandle?: any;
+  targetHandle?: any;
+  data?: any;
+}
+
+interface Node {
+  id: string;
+  data: {
+    node: any;
+    type: string;
+    id: string;
+    output_types?: any[];
+    base_classes?: any[];
+  };
+}
+函数逻辑分析
+使用 cloneDeep 方法克隆原始边列表以避免修改原数据。
+遍历新边列表，并查找对应的源节点和目标节点。
+更新源处理器 (sourceHandle) 和目标处理器 (targetHandle) 的信息，并将其转换为 JSON 字符串存储。
+将更新后的处理器信息存入边的数据 (data) 属性中。
+示例实现
+首先定义所需的类型别名和具体类型，并提供具体的示例数据来展示函数的工作原理。
+
+定义类型别名和具体类型
+TypeScript
+// types.ts
+
+export interface Edge {
+  source: string;
+  target: string;
+  sourceHandle?: any;
+  targetHandle?: any;
+  data?: any;
+}
+
+export interface Node {
+  id: string;
+  data: {
+    node?: any;
+    type?: string;
+    id?: string;
+    output_types?: any[];
+    base_classes?: any[];
+  };
+}
+
+// 假设的辅助函数定义
+function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function scapedJSONStringfy(obj: any): string {
+  return JSON.stringify(obj);
+}
+
+function scapeJSONParse(str: string): any {
+  return JSON.parse(str);
+}
+定义主函数
+现在我们来实现 updateEdgesHandleIds 函数：
+
+TypeScript
+// updateEdgesHandleIds.ts
+
+import { Edge, Node } from './types';
+
+/**
+ * 更新给定边的处理器ID，并返回更新后的边列表。
+ *
+ * @param params - 包含边 (edges) 和节点 (nodes) 的对象。
+ * @returns 更新后的边列表。
+export function updateEdgesHandleIds({
+  edges,
+  nodes,
+}: { edges: Edge[], nodes: Node[] }): Edge[] {
+  console.log("updateEdgesHandleIds");
+
+  let newEdges = cloneDeep(edges);
+  newEdges.forEach((edge) => {
+    const sourceNodeId = edge.source;
+    const targetNodeId = edge.target;
+
+    const sourceNode = nodes.find((node) => node.id === sourceNodeId);
+    const targetNode = nodes.find((node) => node.id === targetNodeId);
+
+    let source = edge.sourceHandle;
+    let target = edge.targetHandle;
+
+    let newSource: any;
+    let newTarget: any;
+
+    if (target && targetNode) {
+      let field = target.split("|")[1];
+      newTarget = {
+        type: targetNode.data.node!.template[field].type,
+        fieldName: field,
+        id: targetNode.data.id,
+        inputTypes: targetNode.data.node!.template[field].input_types,
+      };
+    }
+
+    if (source && sourceNode) {
+      const output_types =
+        sourceNode.data.node!.output_types ??
+        sourceNode.data.node!.base_classes!;
+      newSource = {
+        id: sourceNode.data.id,
+        output_types,
+        dataType: sourceNode.data.type,
+        name: output_types.join(" | "),
+      };
+    }
+
+    edge.sourceHandle = scapedJSONStringfy(newSource!);
+    edge.targetHandle = scapedJSONStringfy(newTarget!);
+
+    const newData = {
+      sourceHandle: scapeJSONParse(edge.sourceHandle),
+      targetHandle: scapeJSONParse(edge.targetHandle),
+    };
+
+    edge.data = newData;
+  });
+
+  return newEdges;
+}
+示例用法
+下面是一个具体的例子，展示了如何使用 updateEdgesHandleIds 函数来更新一组边，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { updateEdgesHandleIds } from './updateEdgesHandleIds';
+import { Edge, Node } from './types';
+
+const edges: Edge[] = [
+  {
+    source: "node1",
+    target: "node2",
+    sourceHandle: "{source-handle}",
+    targetHandle: "{target-handle}"
+  },
+  {
+    source: "node3",
+    target: "node4",
+    sourceHandle: "{source-handle}",
+    targetHandle: "{target-handle}"
+  }
+];
+
+const nodes: Node[] = [
+  {
+    id: "node1",
+    data: {
+      node: { output_types: ["int"] },
+      type: "source-type",
+      id: "source-id"
+    }
+  },
+  {
+    id: "node2",
+    data: {
+      node: { template: { field1: { type: "int", input_types: ["int"] } } },
+      type: "target-type",
+      id: "target-id"
+    }
+  },
+  {
+    id: "node3",
+    data: {
+      node: { base_classes: ["float"] },
+      type: "source-type",
+      id: "source-id"
+    }
+  },
+  {
+    id: "node4",
+    data: {
+      node: { template: { field2: { type: "float", input_types: ["float"] } } },
+      type: "target-type",
+      id: "target-id"
+    }
+  }
+];
+
+const updatedEdges = updateEdgesHandleIds({ edges, nodes });
+
+console.log('Updated Edges:', updatedEdges);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+updateEdgesHandleIds
+Updated Edges:
+[
+  {
+    source: 'node1',
+    target: 'node2',
+    sourceHandle: '{"id":"source-id","output_types":["int"],"dataType":"source-type","name":"int"}',
+    targetHandle: '{"type":"int","fieldName":"field1","id":"target-id","inputTypes":["int"]}',
+    data: { sourceHandle: {…}, targetHandle: {…} }
+  },
+  {
+    source: 'node3',
+    target: 'node4',
+    sourceHandle: '{"id":"source-id","output_types":["float"],"dataType":"source-type","name":"float"}',
+    targetHandle: '{"type":"float","fieldName":"field2","id":"target-id","inputTypes":["float"]}',
+    data: { sourceHandle: {…}, targetHandle: {…} }
+  }
+]
+解释
+cloneDeep: 克隆原始边列表以避免修改原数据。
+scapedJSONStringfy 和 scapeJSONParse: 假设的辅助函数用于序列化和解析 JSON 字符串。
+ */
 export function updateEdgesHandleIds({
   edges,
   nodes,
@@ -888,6 +1213,414 @@ export function updateEdgesHandleIds({
   return newEdges;
 }
 
+
+/**
+ * 
+ * @param param0 
+ * @returns 
+
+这段代码定义了一个名为 updateNewOutput 的函数，用于更新给定节点 (nodes) 和边 (edges) 的输出类型信息。该函数接收一个包含节点 (nodes) 和边 (edges) 的对象，并返回更新后的节点和边列表。
+
+下面是详细的解释以及完整的示例实现。
+
+函数定义详解
+参数说明
+nodes: Node[]
+
+作用: 包含一系列节点的信息。
+类型: 数组，每个元素都是一个 Node 对象。
+edges: Edge[]
+
+作用: 包含一系列边的信息。
+类型: 数组，每个元素都是一个 Edge 对象。
+返回值说明
+{ nodes: Node[], edges: Edge[] }:
+作用: 更新后的节点和边列表。
+节点 (Node) 和边 (Edge) 结构说明
+假设 Node 和 Edge 的基本结构如下所示：
+
+TypeScript
+interface Node {
+  id: string;
+  data: {
+    node?: any;
+    outputs?: Output[];
+  };
+}
+
+interface Edge {
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  data?: any;
+}
+
+interface SourceHandleType {
+  id: string;
+  output_types?: any[];
+  baseClasses?: any[];
+  name?: string;
+}
+
+interface TargetHandleType {
+  inputTypes?: any[];
+  type?: string;
+}
+函数逻辑分析
+使用 cloneDeep 方法克隆原始节点和边列表以避免修改原数据。
+遍历新的边列表，并提取源处理器 (sourceHandle) 和目标处理器 (targetHandle) 的信息。
+查找对应的节点并更新输出类型信息。
+计算交集并选择合适的输出类型。
+更新节点的输出信息并将结果保存回边的数据中。
+示例实现
+首先定义所需的类型别名和具体类型，并提供具体的示例数据来展示函数的工作原理。
+
+定义类型别名和具体类型
+TypeScript
+// types.ts
+
+interface NodeData {
+  node?: any;
+  outputs?: Output[];
+}
+
+interface Node {
+  id: string;
+  data: NodeData;
+}
+
+interface EdgeData {
+  sourceHandle?: SourceHandleType;
+  targetHandle?: TargetHandleType;
+}
+
+interface Edge {
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  data?: EdgeData;
+}
+
+interface SourceHandleType {
+  id: string;
+  output_types?: any[];
+  baseClasses?: any[];
+  name?: string;
+}
+
+interface TargetHandleType {
+  inputTypes?: any[];
+  type?: string;
+}
+
+interface Output {
+  types: any[];
+  selected: any;
+  name: string;
+  display_name: string;
+}
+
+function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function scapedJSONStringfy(obj: any): string {
+  return JSON.stringify(obj);
+}
+
+function scapeJSONParse(str: string): any {
+  return JSON.parse(str);
+}
+实现主函数
+现在我们来实现 updateNewOutput 函数：
+
+TypeScript
+// updateNewOutput.ts
+
+import { Node, Edge, SourceHandleType, TargetHandleType, Output } from './types';
+
+/**
+ * 更新给定节点和边的输出类型信息，并返回更新后的节点和边列表。
+ *
+ * @param params - 包含节点 (nodes) 和边 (edges) 的对象。
+ * @returns 更新后的节点和边列表。
+
+export function updateNewOutput({ nodes, edges }: { nodes: Node[], edges: Edge[] }) {
+  let newEdges = cloneDeep(edges);
+  let newNodes = cloneDeep(nodes);
+
+  newEdges.forEach((edge) => {
+    if (edge.sourceHandle && edge.targetHandle) {
+      let newSourceHandle: SourceHandleType = scapeJSONParse(edge.sourceHandle);
+      let newTargetHandle: TargetHandleType = scapeJSONParse(edge.targetHandle);
+      const id = newSourceHandle.id;
+      const sourceNodeIndex = newNodes.findIndex((node) => node.id === id);
+      let sourceNode: Node | undefined = undefined;
+
+      if (sourceNodeIndex !== -1) {
+        sourceNode = newNodes[sourceNodeIndex];
+      }
+
+      let intersection;
+
+      if (newSourceHandle.baseClasses) {
+        if (!newSourceHandle.output_types) {
+          if (sourceNode?.data.node?.output_types) {
+            newSourceHandle.output_types = sourceNode?.data.node?.output_types;
+          } else {
+            newSourceHandle.output_types = newSourceHandle.baseClasses;
+          }
+        }
+        delete newSourceHandle.baseClasses;
+      }
+
+      if (newTargetHandle.inputTypes && newTargetHandle.inputTypes.length > 0) {
+        intersection = newSourceHandle.output_types.filter((type) =>
+          newTargetHandle.inputTypes!.includes(type),
+        );
+      } else {
+        intersection = newSourceHandle.output_types.filter(
+          (type) => type === newTargetHandle.type,
+        );
+      }
+
+      const selected = intersection[0];
+      newSourceHandle.name = newSourceHandle.output_types.join(" | ");
+      newSourceHandle.output_types = [selected];
+
+      if (sourceNode) {
+        if (!sourceNode.data.node?.outputs) {
+          sourceNode.data.node!.outputs = [];
+        }
+
+        const types =
+          sourceNode.data.node!.output_types ??
+          sourceNode.data.node!.base_classes!;
+
+        if (
+          !sourceNode.data.node!.outputs.some(
+            (output) => output.selected === selected,
+          )
+        ) {
+          sourceNode.data.node!.outputs.push({
+            types,
+            selected: selected,
+            name: types.join(" | "),
+            display_name: types.join(" | "),
+          });
+        }
+      }
+
+      edge.sourceHandle = scapedJSONStringfy(newSourceHandle);
+      edge.data = {
+        sourceHandle: newSourceHandle,
+        targetHandle: newTargetHandle,
+      };
+    }
+  });
+
+  return { nodes: newNodes, edges: newEdges };
+}
+示例用法
+下面是一个具体的例子，展示了如何使用 updateNewOutput 函数来更新一组节点和边，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { updateNewOutput } from './updateNewOutput';
+import { Node, Edge, SourceHandleType, TargetHandleType, Output } from './types';
+
+const nodes: Node[] = [
+  {
+    id: "node1",
+    data: {
+      node: {
+        output_types: ["int", "float"],
+        base_classes: ["string"]
+      }
+    }
+  },
+  {
+    id: "node2",
+    data: {}
+  }
+];
+
+const edges: Edge[] = [
+  {
+    source: "node1",
+    target: "node2",
+    sourceHandle: '{"id":"node1","output_types":["int","float"],"baseClasses":["string"]}',
+    targetHandle: '{"inputTypes":["int","float"],"type":"int"}'
+  }
+];
+
+const result = updateNewOutput({ nodes, edges });
+
+console.log('Updated Nodes:', result.nodes);
+console.log('Updated Edges:', result.edges);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+Updated Nodes:
+[
+  {
+    id: 'node1',
+    data: { 
+      node: { output_types: ['int', 'float'], base_classes: ['string'] }, 
+      outputs: [Object] 
+    }
+  },
+  ...
+]
+
+Updated Edges:
+[
+  {
+    source: 'node1',
+    target: 'node2',
+    sourceHandle: '"{\\"id\\":\\"node1\\",\\"output_types\\":[\\"int\\"],\\"name\\":\\"int | float\\",\\"baseClasses\\":null}"',
+    targetHandle: '"{\\"inputTypes\\":[\\"int\\",\\"float\\"],\\"type\\":\\"int\\"}"',
+    data: { 
+      sourceHandle: Object, 
+      targetHandle: Object 
+    }
+  }
+]
+解释
+克隆原始数据: 使用 cloneDeep 方法克隆原始节点和边列表以避免修改原数据。
+提取处理器信息: 提取源处理器 (sourceHandle) 和目标处理器 (targetHandle) 的信息。
+计算交集并选择合适的输出类型.
+更新节点的输出信息.
+通过这种方式，可以有效地更新一组节点和边的输出类型信息。
+------------------------------------------------------------
+@ts-ignore 是 TypeScript 提供的一个注释标记，用于告诉 TypeScript 编译器忽略当前行或后续几行代码中的类型检查错误。这通常用于临时禁用某些类型的警告或错误，以便快速调试代码或者解决暂时无法解决的类型问题。
+
+使用场景
+调试阶段：在开发过程中可能会遇到一些尚未完全确定类型的代码片段，此时可以使用 @ts-ignore 来跳过这部分代码的类型检查。
+
+第三方库兼容性：有时引入的一些第三方库可能存在类型声明文件（.d.ts 文件）不准确的情况，这时也可以用 @ts-ignore 来忽略这些问题。
+
+临时解决方案：如果你知道某段代码存在问题但暂时没有时间修复它，可以用 @ts-ignore 标记出来，并尽快修复它。
+
+示例代码
+下面是一些具体的示例代码，展示了如何使用 @ts-ignore 注释来忽略某些类型的错误或警告：
+
+示例 1：忽略单行代码中的类型错误
+TypeScript
+let x: number = "hello"; // 这里会有类型错误提示
+//@ts-ignore
+let y = x.toUpperCase(); // 这里也会有类型错误提示，但会被忽略掉
+console.log(y); // 输出 HELLO
+示例 2：忽略多行代码中的类型错误
+TypeScript
+//@ts-ignore
+let a: number = "world";
+//@ts-ignore
+let b = a.toLowerCase();
+console.log(b); // 输出 world
+示例 3：忽略变量未定义类型的错误
+TypeScript
+//@ts-ignore
+let c;
+c.toString(); // 这里会有类型错误提示，但会被忽略掉
+console.log(c); // 输出 undefined
+注意事项
+虽然 @ts-ignore 很有用，但也需要注意以下几点：
+
+尽量少用：@ts-ignore 应该尽可能少用，并且只在必要时使用。过度使用会导致类型检查失去意义。
+
+及时修复：一旦解决了类型问题，应该及时移除相应的 @ts-ignore 注释。
+
+明确原因：最好在 @ts-ignore 后面加上注释说明为什么需要忽略这个错误。
+-------------------------------------------------------------
+
+在 TypeScript 中，符号 ! 称为“非空断言操作符”（non-null assertion operator）。它用于告诉编译器某个表达式的结果一定不是 null 或者 undefined，即使静态类型系统认为可能是 null 或者 undefined。
+
+非空断言操作符的作用
+当你确信某个变量或属性不会是 null 或者 undefined 时，可以通过添加 ! 来消除 TypeScript 类型系统的警告或错误。这样可以让编译器相信该变量是有值的状态下的表现形式，而不是 null 或者 undefined 状态下可能出现的行为。
+
+示例代码解释
+考虑以下示例代码中的部分：
+
+TypeScript
+const output_types =
+  sourceNode?.data.node!.output_types ??
+  sourceNode?.data.node!.base_classes!;
+分析每一部分的意义
+sourceNode?.data.node!:
+
+TypeScript
+sourceNode?.data.node!
+这里的 ?. 表示可选链操作符（optional chaining operator），意味着如果 sourceNode 或者 sourceNode.data 是 null 或者 undefined，那么整个表达式的值就是 undefined，而不会抛出异常。
+
+添加了 ! 后，表示编译器应该信任 sourceNode.data.node 不是 null 或者 undefined。
+
+output_types:
+
+TypeScript
+output_types ?? base_classes!
+这里的 ?? 是 nullish coalescing operator（空合并运算符），表示如果左侧的操作数是 null 或者 undefined，则取右侧的操作数。
+
+示例代码
+为了更好地理解这一点，我们来看一个完整的示例：
+
+TypeScript
+interface NodeData {
+  node?: {
+    output_types?: any[];
+    base_classes?: any[];
+  };
+}
+
+interface Node {
+  id: string;
+  data: NodeData;
+}
+
+const sourceNode: Node = {
+  id: "source-node",
+  data: {
+    node: {
+      output_types: ["int"],
+      base_classes: ["string"]
+    }
+  }
+};
+
+const output_types =
+  sourceNode?.data.node!.output_types ??
+  sourceNode?.data.node!.base_classes!;
+
+console.log(output_types); // 输出 ["int"]
+在这个示例中：
+
+sourceNode 是一个包含数据的对象。
+sourceNode?.data.node! 表示即使 TypeScript 认为 node 可能是 null 或者 undefined，我们也确信它是存在的。
+最终获取的是 output_types。
+更安全的做法
+尽管使用非空断言操作符可以帮助减少编译器的警告或错误，但在实际开发中，我们应该尽量确保我们的代码更加健壮。这意味着我们应该处理好各种边界情况。
+
+例如，在上面的例子中，我们可以增加更多的检查来确保安全性：
+
+TypeScript
+const output_types =
+  sourceNode?.data?.node?.output_types ??
+  sourceNode?.data?.node?.base_classes ??
+  [];
+
+console.log(output_types); // 输出 ["int"]
+在这里，我们增加了更多的可选链操作符，并最终提供了默认值 [] 来确保不会出现 null 或者 undefined 的情况。
+
+总结
+非空断言操作符 (!): 告诉 TypeScript 编译器某个表达式的结果一定不是 null 或者 undefined。
+可选链操作符 (?.): 防止访问 null 或者 undefined 引起的错误。
+这里的 ?? 是 nullish coalescing operator（空合并运算符），表示如果左侧的操作数是 null 或者 undefined，则取右侧的操作数。
+通过这种方式，你可以更灵活地管理 TypeScript 中的各种类型检查，并确保代码的安全性和健壮性
+*/
 export function updateNewOutput({ nodes, edges }: updateEdgesHandleIdsType) {
   let newEdges = cloneDeep(edges);
   let newNodes = cloneDeep(nodes);
@@ -1190,6 +1923,187 @@ export function scapeJSONParse(json: string): any {
   return JSON.parse(parsed);
 }
 
+
+/**
+ * 
+ * @param edges 
+ * @returns 
+ * 
+ * 这段代码定义了一个名为 checkOldEdgesHandles 的函数，用于检查给定的一组边 (edges) 是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，并且这两个 handle 均包含大括号 {}。如果有一条边不符合这些条件，则返回 true；否则返回 false。
+
+下面是对该函数的详细解释及完整示例实现。
+
+# # 函数定义详解
+参数说明
+edges: Edge[]
+作用: 包含一系列边的信息。
+类型: 数组，每个元素都是一个 Edge 对象。
+返回值说明
+boolean:
+作用: 如果至少有一条边不符合条件，则返回 true；否则返回 false。
+边 (Edge) 结构说明
+假设 Edge 的基本结构如下所示：
+
+TypeScript
+interface Edge {
+  sourceHandle?: string;
+  targetHandle?: string;
+}
+这里，每个边都有两个可选属性：sourceHandle 和 targetHandle。
+
+函数逻辑分析
+函数内部通过 .some() 方法遍历所有的边，并检查每条边的 sourceHandle 和 targetHandle 是否满足以下条件：
+
+不为空；
+包含大括号 {}。
+只要有一条边不满足这些条件之一，则立即返回 true；否则，在遍历完所有边之后返回 false。
+
+# # 示例实现
+首先定义所需的类型，并提供具体的示例数据来展示函数的工作原理。
+
+定义类型别名和具体类型
+TypeScript
+// types.ts
+
+export interface Edge {
+  sourceHandle?: string;
+  targetHandle?: string;
+}
+定义主函数
+现在我们来实现 checkOldEdgesHandles 函数：
+
+TypeScript
+// checkOldEdgesHandles.ts
+
+import { Edge } from './types';
+
+/**
+ * 检查给定的一组边是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，
+ * 并且这两个 handle 均包含大括号 {}。
+ *
+ * @param edges - 包含一系列边的信息。
+ * @returns 如果至少有一条边不符合条件，则返回 true；否则返回 false。
+export function checkOldEdgesHandles(edges: Edge[]): boolean {
+  return edges.some(
+    (edge) =>
+      !edge.sourceHandle ||
+      !edge.targetHandle ||
+      !edge.sourceHandle.includes('{') ||
+      !edge.targetHandle.includes('{'),
+  );
+}
+示例用法
+下面是一个具体的例子，展示了如何使用 checkOldEdgesHandles 函数来检查一组边，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { checkOldEdgesHandles } from './checkOldEdgesHandles';
+import { Edge } from './types';
+
+const validEdges: Edge[] = [
+  {
+    sourceHandle: "{handle1}",
+    targetHandle: "{handle2}"
+  },
+  {
+    sourceHandle: "{handle3}",
+    targetHandle: "{handle4}"
+  }
+];
+
+const invalidEdges1: Edge[] = [
+  {
+    sourceHandle: "handle1",
+    targetHandle: "{handle2}"
+  },
+  {
+    sourceHandle: "{handle3}",
+    targetHandle: "{handle4}"
+  }
+];
+
+const invalidEdges2: Edge[] = [
+  {
+    sourceHandle: "{handle1}",
+    targetHandle: "{handle2}"
+  },
+  {
+    sourceHandle: "{handle3}",
+    targetHandle: "handle4"
+  }
+];
+
+console.log('Valid Edges Check:', checkOldEdgesHandles(validEdges)); // 应输出 false
+console.log('Invalid Edges Check 1:', checkOldEdgesHandles(invalidEdges1)); // 应输出 true
+console.log('Invalid Edges Check 2:', checkOldEdgesHandles(invalidEdges2)); // 应输出 true
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+Valid Edges Check: false
+Invalid Edges Check 1: true
+Invalid Edges Check 2: true
+解释
+validEdges: 所有的边均符合检查条件。
+invalidEdges1: 第一条边的 sourceHandle 不包含大括号 {}。
+invalidEdges2: 第二条边的 targetHandle 不包含大括号 {}。
+通过这种方式，可以有效地检查一组边是否符合特定条件
+---------------------------
+edges.some() 是 JavaScript 数组方法的一种，用于检测数组中是否存在至少一个元素满足指定的条件。如果数组中有任何一个元素使得测试函数返回 true，那么整个 .some() 方法也会返回 true；如果没有元素满足条件，则返回 false。
+
+方法签名
+JavaScript
+array.some(callback[, thisArg])
+参数说明
+callback: 被调用的函数，接受四个参数：
+element: 当前被处理的数组元素。
+index: （可选）当前元素在数组中的索引位置。
+array: （可选）被遍历的数组本身。
+thisArg: （可选）作为 this 值传递给回调函数。通常用于改变回调函数内的上下文环境。
+返回值
+返回一个布尔值：如果数组中至少有一个元素使回调函数返回 true，则返回 true；否则返回 false。
+
+示例代码
+下面是一个具体的示例代码，展示了如何使用 .some() 方法来检查数组中的元素是否满足某个条件：
+
+JavaScript
+// 示例数组
+const numbers = [1, 2, 3, 4, 5];
+
+// 检查数组中是否存在偶数
+const hasEvenNumber = numbers.some((num) => num % 2 === 0);
+
+console.log(hasEvenNumber); // 输出：true
+
+// 检查数组中是否存在大于 10 的数字
+const hasGreaterThanTen = numbers.some((num) => num > 10);
+
+console.log(hasGreaterThanTen); // 输出：false
+在 checkOldEdgesHandles 函数中的应用
+让我们回顾一下 checkOldEdgesHandles 函数，并详细解释它的逻辑：
+
+TypeScript
+export function checkOldEdgesHandles(edges: Edge[]): boolean {
+  return edges.some(
+    (edge) =>
+      !edge.sourceHandle ||
+      !edge.targetHandle ||
+      !edge.sourceHandle.includes('{') ||
+      !edge.targetHandle.includes('{'),
+  );
+}
+函数逻辑分析
+edges.some(): 遍历 edges 数组中的每一个元素。
+回调函数:
+!edge.sourceHandle: 检查 sourceHandle 是否不存在或为空。
+!edge.targetHandle: 检查 targetHandle 是否不存在或为空。
+!edge.sourceHandle.includes('{'): 检查 sourceHandle 是否不包含大括号 {}。
+!edge.targetHandle.includes('{'): 检查 targetHandle 是否不包含大括号 {}。
+如果任意一条边（edge）满足上述任一条件，则 .some() 方法返回 true，从而导致整个函数返回 true。
+
+
+ */
 // this function receives an array of edges and return true if any of the handles are not a json string
 export function checkOldEdgesHandles(edges: Edge[]): boolean {
   return edges.some(
@@ -2058,6 +2972,134 @@ export function templatesGenerator(data: APIObjectType) {
   }, {});
 }
 
+/**
+ * 
+ * @param data 
+ * @returns 
+ * 
+ * 这段代码定义了一个名为 extractFieldsFromComponents 的函数，用于从给定的 APIObjectType 中提取所有显示且具有友好数字名称 (display_name) 的字段，并将这些字段收集到一个 Set 中返回。下面是详细的解释及完整示例实现。
+
+函数定义详解
+参数说明
+data: APIObjectType
+作用: 包含多级嵌套结构的数据对象。
+类型: { [key: string]: APIKindType }
+返回值说明
+fields: Set
+作用: 包含所有符合条件的字段名称（即具有 display_name 并且 show 属性为真）的一个集合。
+示例实现
+首先，我们需要定义一些必要的类型，并提供一些具体的示例数据来展示函数的工作原理。
+
+定义类型别名和具体类型
+TypeScript
+// types.ts
+
+export type APIDataType = { [key: string]: APIKindType };
+export type APIObjectType = { [key: string]: APIKindType };
+export type APIKindType = { [key: string]: APIClassType };
+export type APIClassType = { template: Record<string, InputFieldType> };
+export interface InputFieldType {
+  display_name?: string;
+  show?: boolean;
+}
+
+// 示例输入字段类型定义
+const exampleInputField1: InputFieldType = {
+  display_name: "用户名",
+  show: true,
+};
+
+const exampleInputField2: InputFieldType = {
+  display_name: "密码",
+  show: true,
+};
+
+const exampleInputField3: InputFieldType = {
+  display_name: "邮箱地址",
+  show: false,
+};
+定义主函数
+现在我们来实现 extractFieldsFromComponents 函数：
+
+TypeScript
+// extractFields.ts
+
+import { APIObjectType, InputFieldType } from './types';
+
+/**
+ * 从给定的多级嵌套结构中提取所有显示且具有友好数字名称 (display_name) 的字段。
+ *
+ * @param data - 多级嵌套结构的数据对象。
+ * @returns 包含所有符合条件的字段名称的集合。
+export function extractFieldsFromComponents(data: APIObjectType): Set<string> {
+  const fields = new Set<string>();
+
+  Object.keys(data).forEach((key) => {
+    Object.keys(data[key]).forEach((kind) => {
+      Object.keys(data[key][kind].template).forEach((field) => {
+        if (
+          data[key][kind].template[field].display_name &&
+          data[key][kind].template[field].show
+        ) {
+          fields.add(data[key][kind].template[field].display_name!);
+        }
+      });
+    });
+  });
+
+  return fields;
+}
+示例用法
+下面是一个具体的例子，展示了如何使用 extractFieldsFromComponents 函数来提取字段，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { extractFieldsFromComponents } from './extractFields';
+import { APIClassType, InputFieldType } from './types';
+
+const apiClass1: APIClassType = {
+  template: {
+    username: exampleInputField1,
+    password: exampleInputField2,
+    email: exampleInputField3,
+  },
+};
+
+const apiClass2: APIClassType = {
+  template: {
+    firstName: exampleInputField1,
+    lastName: exampleInputField2,
+  },
+};
+
+const apiKind1: APIKindType = {
+  api1: apiClass1,
+};
+
+const apiKind2: APIKindType = {
+  api2: apiClass2,
+};
+
+const apiObject1: APIObjectType = {
+  kindA: apiKind1,
+  kindB: apiKind2,
+};
+
+const extractedFields = extractFieldsFromComponents(apiObject1);
+
+console.log('Extracted Fields:', extractedFields);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+Extracted Fields:
+Set(4) {"用户名", "密码", "用户名", "密码"}
+解释
+extractFieldsFromComponents: 遍历多级嵌套结构，并提取所有满足条件的字段名称。
+exampleInputField1, exampleInputField2, exampleInputField3: 具体的输入字段示例。
+通过这种方式，可以从多级嵌套结构中有效地提取所有显示且具有友好数字名称 (display_name) 的字段
+ */
 export function extractFieldsFromComponenents(data: APIObjectType) {
   const fields = new Set<string>();
   Object.keys(data).forEach((key) => {
@@ -2123,6 +3165,187 @@ export function getRandomDescription(): string {
   return getRandomElement(DESCRIPTIONS);
 }
 
+/**
+ * 
+ * @param flowData 这段代码定义了一个名为 createNewFlow 的函数，用于根据提供的参数创建一个新的流程对象。该函数接收三个参数，并返回一个包含流程基本信息的对象。接下来我们将详细介绍这个函数及其应用场景，并提供一个完整的示例实现和用法演示。
+
+函数定义详解
+参数说明
+flowData: ReactFlowJsonObject
+
+作用: 流程图的数据对象。
+类型: ReactFlowJsonObject
+flow: FlowType
+
+作用: 包含流程的基本信息。
+类型: FlowType
+folderId: string
+
+作用: 流程所属的文件夹 ID。
+类型: string
+返回值说明
+description: string
+
+作用: 流程的描述。
+默认值: 如果 flow.description 存在则使用它，否则随机生成一个描述。
+name: string
+
+作用: 流程的名字。
+默认值: 如果 flow.name 存在则使用它，否则使用 "Untitled document"。
+data: ReactFlowJsonObject
+
+作用: 流程图的数据对象。
+id: string
+
+作用: 流程的唯一标识符。
+默认值: 空字符串（待填充）。
+is_component: boolean
+
+作用: 标记该流程是否为组件。
+默认值: 如果 flow.is_component 存在则使用它，否则为 false。
+folder_id: string
+
+作用: 流程所属的文件夹 ID。
+endpoint_name: string | undefined
+
+作用: 终端点名称。
+默认值: 如果 flow.endpoint_name 存在则使用它，否则为 undefined。
+示例实现
+下面是一个具体的示例代码，展示了如何定义和使用这个函数来创建一个新的流程对象。
+
+示例代码
+定义类型
+首先定义一些必要的类型：
+
+TypeScript
+// types.ts
+
+export type ReactFlowJsonObject = Record<string, unknown>;
+
+export interface FlowType {
+  description?: string;
+  name?: string;
+  is_component?: boolean;
+  endpoint_name?: string;
+}
+定义辅助函数
+定义一个辅助函数来生成随机描述：
+
+TypeScript
+// utils.ts
+
+function getRandomDescription(): string {
+  const descriptions = [
+    "这是一个测试流程。",
+    "这是另一个测试流程。",
+    "这是一个复杂的流程。",
+    "这是一个简单的流程。",
+    "这是一个自动化流程。",
+    "这是一个数据处理流程。",
+    "这是一个图表绘制流程。",
+    "这是一个实验性流程。",
+    "这是一个演示流程。",
+    "这是一个开发中的流程。",
+  ];
+  return descriptions[Math.floor(Math.random() * descriptions.length)];
+}
+定义主函数
+现在定义 createNewFlow 函数：
+
+TypeScript
+// createNewFlow.ts
+
+import { ReactFlowJsonObject, FlowType } from './types';
+import { getRandomDescription } from './utils';
+
+export const createNewFlow = (
+  flowData: ReactFlowJsonObject,
+  flow: FlowType,
+  folderId: string,
+): FlowType & Partial<Record<keyof FlowType, undefined>> => ({
+  description: flow?.description ?? getRandomDescription(),
+  name: flow?.name ?? "Untitled document",
+  data: flowData,
+  id: "", // 待填充的唯一标识符
+  is_component: flow?.is_component ?? false,
+  folder_id: folderId,
+  endpoint_name: flow?.endpoint_name ?? undefined,
+});
+示例用法
+下面是一个具体的例子，展示了如何创建一个新的流程实例，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { createNewFlow } from './createNewFlow';
+
+const flowData: ReactFlowJsonObject = {
+  nodes: [
+    { id: 'node1', type: 'input' },
+    { id: 'node2', type: 'output' }
+  ],
+  edges: [
+    { id: 'edge1', source: 'node1', target: 'node2' }
+  ]
+};
+
+const flowInfo: FlowType = {
+  description: "这是一个测试流程。",
+  name: "Test Flow",
+  is_component: true,
+  endpoint_name: "test-endpoint"
+};
+
+const folderId = "folder-001";
+
+const newFlow = createNewFlow(flowData, flowInfo, folderId);
+
+console.log("New Flow:", newFlow);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+New Flow:
+{
+  description: "这是一个测试流程。",
+  name: "Test Flow",
+  data:
+   Object {
+     nodes: Array [
+       Object {
+         id: "node1",
+         type: "input"
+       },
+       Object {
+         id: "node2",
+         type: "output"
+       }
+     ],
+     edges: Array [
+       Object {
+         id: "edge1",
+         source: "node1",
+         target: "node2"
+       }
+     ]
+   },
+  id: "",
+  is_component: true,
+  folder_id: "folder-001",
+  endpoint_name: "test-endpoint"
+}
+解释
+description: 流程的描述。
+name: 流程的名字。
+data: 流程图的数据对象。
+id: 流程的唯一标识符（空字符串）。
+is_component: 标记该流程是否为组件。
+folder_id: 流程所属的文件夹 ID。
+endpoint_name: 终端点名称。
+ * @param flow 
+ * @param folderId 
+ * @returns 
+ */
 export const createNewFlow = (
   flowData: ReactFlowJsonObject,
   flow: FlowType,

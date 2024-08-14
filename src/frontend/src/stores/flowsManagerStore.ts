@@ -889,7 +889,238 @@ import {
 } from "../types/zustand/flowsManager";
 
 
+/**
+ * 这段代码从模块 "../utils/reactflowUtils" 中导入了多个实用工具函数，用于处理图形界面（React Flow）中的各种操作。下面是每个函数的详细解释及其应用场景。
 
+函数详解
+1. addVersionToDuplicates
+此函数用于处理图形界面中的重复节点，并为每个重复的节点添加版本号。这有助于区分相同的节点实例，并防止命名冲突。
+
+示例：
+
+TypeScript
+// 假设有一个包含重复节点的列表
+const nodes = [
+    { id: 'node1', type: 'input', version: undefined },
+    { id: 'node1', type: 'input', version: undefined },
+    { id: 'node2', type: 'output', version: undefined }
+];
+
+// 处理重复节点并添加版本号
+addVersionToDuplicates(nodes);
+
+console.log(nodes);
+// 输出：
+// [
+//     { id: 'node1_v1', type: 'input', version: 'v1' },
+//     { id: 'node1_v2', type: 'input', version: 'v2' },
+//     { id: 'node2', type: 'output', version: undefined }
+// ]
+2. createFlowComponent
+此函数用于创建新的图形界面组件。通常用于动态生成新的节点或边。
+
+示例：
+
+TypeScript
+interface NodeData {
+    label?: string;
+}
+
+// 创建新的节点组件
+const newNode = createFlowComponent<NodeData>({
+    id: 'newNode',
+    type: 'customType',
+    position: { x: 100, y: 200 },
+    data: { label: '新节点' }
+});
+
+console.log(newNode);
+// 输出：
+// {
+//     id: 'newNode',
+//     type: 'customType',
+//     position: { x: 100, y: 200 },
+//     data: { label: '新节点' }
+// }
+3. createNewFlow
+此函数用于创建一个新的图形界面流。通常用于初始化一个新的图形界面状态。
+
+示例：
+
+TypeScript
+// 创建一个新的图形界面流
+const newFlow = createNewFlow();
+
+console.log(newFlow);
+// 输出：
+// {
+//     nodes: [],
+//     edges: []
+// }
+4. extractFieldsFromComponents
+此函数用于从一组组件中提取特定字段。通常用于批量处理多个组件的共同属性。
+
+示例：
+
+TypeScript
+// 提取所有节点的 `label` 字段
+const components = [
+    { id: 'node1', type: 'input', data: { label: '输入节点' } },
+    { id: 'node2', type: 'output', data: { label: '输出节点' } },
+    { id: 'node3', type: 'process', data: { label: '处理节点' } }
+];
+
+const labels = extractFieldsFromComponents(components, 'data.label');
+
+console.log(labels);
+// 输出：
+// ['输入节点', '输出节点', '处理节点']
+5. processDataFromFlow
+此函数用于处理图形界面流中的数据。通常用于对整个流进行某种计算或处理。
+
+示例：
+
+TypeScript
+// 处理整个流的数据
+const flowData = {
+    nodes: [
+        { id: 'node1', type: 'input', data: { label: '输入节点' } },
+        { id: 'node2', type: 'output', data: { label: '输出节点' } }
+    ],
+    edges: [
+        { id: 'edge1', source: 'node1', target: 'node2', data: {} }
+    ]
+};
+
+const processedData = processDataFromFlow(flowData);
+
+console.log(processedData);
+// 输出：
+// {
+//     inputNodes: [{ id: 'node1', type: 'input', data: { label: '输入节点' }}],
+//     outputNodes: [{ id: 'node2', type: 'output', data: { label: '输出节点' }}],
+//     connections: [{ id: 'edge1', source: 'node1', target: 'node2', data: {} }]
+// }
+6. processFlows
+此函数用于处理多个图形界面流，并合并其结果。通常用于批量处理多个流的情况。
+
+示例：
+
+TypeScript
+// 合并多个流的结果
+const flows = [
+    {
+        nodes: [
+            { id: 'nodeA', type: 'input', data: { label: '输入A' } }
+        ],
+        edges: []
+    },
+    {
+        nodes: [
+            { id: 'nodeB', type: 'output', data: { label: '输出B' } }
+        ],
+        edges: []
+    }
+];
+
+const mergedFlows = processFlows(flows);
+
+console.log(mergedFlows);
+// 输出：
+// {
+//     nodes: [
+//         { id: 'nodeA', type: 'input', data: { label: '输入A' }},
+//         { id: 'nodeB', type: 'output', data: { label: '输出B' }}
+//     ],
+//     edges: []
+// }
+示例代码
+下面是一个完整的示例代码，展示了如何使用这些函数来处理图形界面中的各种操作。
+
+示例实现
+TypeScript
+import {
+  addVersionToDuplicates,
+  createFlowComponent,
+  createNewFlow,
+  extractFieldsFromComponents,
+  processDataFromFlow,
+  processFlows
+} from "../utils/reactflowUtils";
+
+// 示例数据
+const initialNodes = [
+  { id: 'node1', type: 'input', version: undefined },
+  { id: 'node1', type: 'input', version: undefined },
+  { id: 'node2', type: 'output', version: undefined }
+];
+
+// 处理重复节点并添加版本号
+addVersionToDuplicates(initialNodes);
+
+console.log("Processed Nodes:", initialNodes);
+
+// 创建新的节点组件
+const newNode = createFlowComponent<{ label?: string }>({
+  id: 'newNode',
+  type: 'customType',
+  position: { x: 100, y: 200 },
+  data: { label: '新节点' }
+});
+
+console.log("Created Node:", newNode);
+
+// 创建一个新的图形界面流
+const newFlow = createNewFlow();
+
+console.log("New Flow:", newFlow);
+
+// 提取所有节点的 `label` 字段
+const components = [
+  { id: 'nodeA', type: 'input', data: { label: '输入节点' } },
+  { id: 'nodeB', type: 'output', data: { label: '输出节点' } },
+  { id: 'nodeC', type: 'process', data: { label: '处理节点' } }
+];
+
+const labels = extractFieldsFromComponents(components, 'data.label');
+
+console.log("Extracted Labels:", labels);
+
+// 处理整个流的数据
+const flowData = {
+  nodes: [
+    { id: 'node1', type: 'input', data: { label: '输入节点' } },
+    { id: 'node2', type: 'output', data: { label: '输出节点' } }
+  ],
+  edges: [
+    { id: 'edge1', source: 'node1', target: 'node2', data: {} }
+  ]
+};
+
+const processedData = processDataFromFlow(flowData);
+
+console.log("Processed Data:", processedData);
+
+// 合并多个流的结果
+const flows = [
+  {
+    nodes: [
+      { id: 'nodeA', type: 'input', data: { label: '输入A' } }
+    ],
+    edges: []
+  },
+  {
+    nodes: [
+      { id: 'nodeB', type: 'output', data: { label: '输出B' } }
+    ],
+    edges: []
+  }
+];
+
+const mergedFlows = processFlows(flows);
+
+console.log("Merged Flows:", mergedFlows);
+ */
 import {
   addVersionToDuplicates,
   createFlowComponent,

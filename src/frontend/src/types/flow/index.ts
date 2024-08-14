@@ -424,6 +424,122 @@ export type NodeType = {
   selected?: boolean;
 };
 
+/**
+ * 这段代码定义了一个 TypeScript 类型 NodeDataType，用于描述图形界面中节点的数据结构。该类型包含了多个属性，用于表示节点的各种状态和相关信息。接下来我们将详细介绍每个属性的作用及其应用场景。
+
+类型定义详解
+属性说明
+1. showNode? : boolean
+作用: 标记是否显示该节点。
+默认值: 可选（默认为 undefined）。
+应用场景: 在某些情况下需要隐藏某个节点而不删除它时使用此标记。
+2. type : string
+作用: 指定节点的类型。
+默认值: 必填项。
+应用场景: 不同类型的节点有不同的功能或样式配置。
+3. node? : APIClassType
+作用: 存储与该节点关联的具体 API 或类实例。
+默认值: 可选（默认为 undefined）。
+应用场景: 如果需要存储具体的业务逻辑或 API 实例，可以在此属性中保存。
+4. id : string
+作用: 唯一标识符。
+默认值: 必填项。
+应用场景: 确保每个节点都有唯一的 ID，以便于引用和其他操作。
+5. output_types? : string[]
+作用: 列出该节点的所有输出类型。
+默认值: 可选（默认为 undefined）。
+应用场景: 如果一个节点有多重输出选项，则可以列出所有可用的输出类型。
+6. selected_output_type? : string
+作用: 指定当前选定的输出类型。
+默认值: 可选（默认为 undefined）。
+应用场景: 用户可以选择一个具体的输出类型来进行后续处理或其他操作。
+7. buildStatus? : BuildStatus
+作用: 描述该节点的状态。
+默认值: 可选（默认为 undefined）。
+应用场景: 监控和记录节点的状态变化，例如构建成功、失败等状态。
+示例代码
+下面是一个具体的示例代码，展示了如何使用这种类型的节点数据结构。
+
+示例实现
+TypeScript
+// nodeDataType.ts
+
+// 定义 API 类型
+type APIClassType = {
+  // API 类的具体属性和方法...
+};
+
+// 构建状态枚举
+enum BuildStatus {
+  Pending,
+  Success,
+  Failed
+}
+
+// 节点数据类型定义
+export type NodeDataType = {
+  showNode?: boolean;
+  type: string;
+  node?: APIClassType;
+  id: string;
+  output_types?: string[];
+  selected_output_type?: string;
+  buildStatus?: BuildStatus;
+};
+示例用法
+下面是一个具体的例子，展示了如何使用 NodeDataType 来创建一个节点实例。
+
+示例代码
+TypeScript
+import { NodeDataType, APIClassType, BuildStatus } from './nodeDataType';
+
+// 创建一个 API 实例
+const apiInstance: APIClassType = {
+  // API 实例的具体实现...
+};
+
+// 创建一个节点实例
+const nodeData: NodeDataType = {
+  showNode: true,
+  type: 'input',
+  node: apiInstance,
+  id: 'node1',
+  output_types: ['text', 'image'],
+  selected_output_type: 'text',
+  buildStatus: BuildStatus.Success
+};
+
+console.log('Node Data:', nodeData);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+Node Data:
+{
+  showNode: true,
+  type: 'input',
+  node:
+   Object {
+     // API 实例的具体实现...
+   },
+  id: 'node1',
+  output_types: Array [
+    'text',
+    'image'
+  ],
+  selected_output_type: 'text',
+  buildStatus: 1
+}
+解释
+showNode: 控制是否显示该节点。
+type: 指定节点的类型。
+node: 存储与该节点关联的具体 API 或类实例。
+id: 唯一标识符。
+output_types: 列出该节点的所有输出类型。
+selected_output_type: 指定当前选定的输出类型。
+buildStatus: 描述该节点的状态。
+通过这种方式，可以有效地管理和描述图形界面中的各个节点及其相关信息
+ */
 export type NodeDataType = {
   showNode?: boolean;
   type: string;
