@@ -1,7 +1,6 @@
 import { cloneDeep, get } from "lodash";
 
 /**
- 
 这段代码从 reactflow 库中导入了多种核心类型和接口，这些类型主要用于描述图形界面中的连接、节点、边、选择变化事件参数以及 JSON 对象。下面我们逐一解释每种类型的含义及其应用场景。
 
 # # 导入类型详解
@@ -456,6 +455,7 @@ PlainText
 总结
 通过这种方式，你可以灵活地使用泛型来描述图形界面中的不同数据类型。这种方法不仅提高了代码的复用性和可维护性，还增强了类型的安全性和一致性
  */
+
 import {
   Connection,
   Edge,
@@ -639,6 +639,224 @@ export function updateTemplate(
   return clonedObject;
 }
 
+
+/**
+ * 
+ * @param DbData 
+ * @param skipUpdate 
+ * @returns 
+ *这段代码的作用是在处理每个流（FlowType）的数据时，保存组件的信息到 savedComponents 中，并确保每个组件有一个唯一的键值对应。
+
+详细解释
+变量定义和初始化
+savedComponents:
+类型为 { [key: string]: APIClassType }
+表示一个对象，其中键为字符串类型，值为 APIClassType 类型的对象。
+目的是存储每个组件的信息，并为其分配一个唯一的键值对。
+条件判断
+检查是否有数据：
+
+TypeScript
+if (!flow.data) {
+  return;
+}
+检查是否是组件：
+
+TypeScript
+if (flow.is_component && flow.data.nodes[0]) {
+  // ...
+}
+更新组件信息
+获取第一个节点的数据：
+
+TypeScript
+const nodeData = flow.data.nodes[0].data as NodeDataType;
+设置组件显示名称：
+
+TypeScript
+nodeData.node!.display_name = flow.name;
+创建随机键（key）：
+
+TypeScript
+createRandomKey(nodeData.type, uid.randomUUID(5))
+这里使用了两个部分：
+
+nodeData.type （组件类型）
+uid.randomUUID(5) （长度为5的随机UID）
+合成一个唯一的键（例如：“component_type_abcdef”）。
+
+保存组件信息到 savedComponents 中：
+
+TypeScript
+savedComponents[
+  createRandomKey(nodeData.type, uid.randomUUID(5))
+] = cloneDeep(nodeData.node!);
+将组件数据深拷贝后存入 savedComponents 对象中。这样做的目的是确保每个组件都有一个独立的副本，并且可以通过唯一的键访问它。
+
+整体流程总结
+检查流数据是否存在：
+
+TypeScript
+if (!flow.data) {
+  return;
+}
+检查是否为组件：
+
+TypeScript
+if (flow.is_component && flow.data.nodes[0]) {
+  // ...
+}
+更新组件显示名称：
+
+TypeScript
+const nodeData = flow.data.nodes[0].data as NodeDataType;
+nodeData.node!.display_name = flow.name;
+创建随机键并保存组件数据：
+
+TypeScript
+savedComponents[
+  createRandomKey(nodeData.type, uid.randomUUID(5))
+] = cloneDeep(nodeData.node!);
+示例代码演示
+假设我们有以下数据结构：
+
+TypeScript
+interface NodeDataType {
+  type: string;
+  node?: APIClassType;
+}
+
+interface APIClassType {
+  display_name?: string; // 组件显示名称
+}
+
+interface FlowType {
+  id?: string;
+  name?: string;
+  is_component?: boolean;
+  data?: {
+    nodes?: Array<{
+      data?: NodeDataType;
+    }>;
+  };
+}
+示例数据
+TypeScript
+const sampleDbData: FlowType[] = [
+  {
+    id: "flow1",
+    name: "Sample Component",
+    is_component: true,
+    data: {
+      nodes: [
+        {
+          data: {
+            type: "component_type",
+            node: {
+              display_name: "Initial Name"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    id: "flow2",
+    name: "Another Flow",
+    is_component: false,
+    data: {
+      nodes: [
+        {
+          data: {
+            type: "other_type",
+            node: null // 假设这里没有 node 数据
+          }
+        }
+      ]
+    }
+  }
+];
+处理流程
+初始化 savedComponents：
+
+TypeScript
+let savedComponents: { [key: string]: APIClassType } = {};
+处理每个流：
+
+TypeScript
+DbData.forEach((flow: FlowType) => {
+  try {
+    if (!flow.data) {
+      return;
+    }
+
+    if (flow.is_component && flow.data.nodes[0]) {
+      const nodeData = flow.data.nodes[0].data as NodeDataType;
+      nodeData.node!.display_name = flow.name;
+
+      savedComponents[
+        createRandomKey(nodeData.type, uid.randomUUID(5))
+      ] = cloneDeep(nodeData.node!);
+      return;
+    }
+
+    processDataFromFlow(flow, !skipUpdate);
+  } catch (e) {
+    console.error(e); // 更改日志级别为 error
+  }
+});
+输出结果
+假设 createRandomKey 和 cloneDeep 方法按预期工作，那么最终的输出结果将是：
+
+TypeScript
+{
+  data: {
+    "component_type_abcdef": {
+      display_name: "Sample Component"
+    }
+  },
+  flows: [
+    {
+      id: "flow1",
+      name: "Sample Component",
+      is_component: true,
+      data: {
+        nodes: [
+          {
+            data: {
+              type: "component_type",
+              node: {
+                display_name: "Sample Component"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      id: "flow2",
+      name: "Another Flow",
+      is_component: false,
+      data: {
+        nodes: [
+          {
+            data: {
+              type: "other_type",
+              node: null
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+总结
+这段代码的主要作用是：
+
+检查流数据的存在性。
+识别哪些流是组件，并更新组件显示名称。
+为每个组件创建一个唯一的键，并将其数据深拷贝后保存到 savedComponents 中。
+ */
 export const processFlows = (DbData: FlowType[], skipUpdate = true) => {
   let savedComponents: { [key: string]: APIClassType } = {};
   DbData.forEach((flow: FlowType) => {
@@ -670,15 +888,442 @@ export const processDataFromFlow = (flow: FlowType, refreshIds = true) => {
   if (data) {
     processFlowEdges(flow);
     //add dropdown option to nodeOutputs
+    // 将下拉选项添加到nodeOutputs
     processFlowNodes(flow);
     //add animation to text type edges
+    // 向文本类型边添加动画
     updateEdges(data.edges);
     // updateNodes(data.nodes, data.edges);
-    if (refreshIds) updateIds(data); // Assuming updateIds is defined elsewhere
+    if (refreshIds) updateIds(data); // Assuming updateIds is defined elsewher  假设 updateIds 在别处定义 
   }
   return data;
 };
 
+
+/**
+ * 
+这段代码定义了一个名为 updateIds 的函数，用于更新给定节点 (nodes) 和边 (edges) 的 ID，并根据选择项 (selection) 进行特殊处理。该函数接收两个参数：一个是包含所有节点和边的基本对象，另一个是可选的选择项对象。
+以下是详细的解释以及完整的示例实现：
+函数定义详解
+参数说明
+{ edges, nodes }: { edges: Edge[], nodes: Node[] }
+
+作用: 包含所有节点和边的基本信息。
+selection?: { edges: Edge[], nodes: Node[] }
+
+作用: 可选的选择项对象，包含选定的边缘和节点信息。
+返回值说明
+idsMap: Map<string, string>
+作用: 存储旧 ID 到新 ID 的映射关系。
+节点 (Node) 和边 (Edge) 结构说明
+假设 Node 和 Edge 的基本结构如下所示：
+
+TypeScript
+interface Node {
+  id: string;
+  data: {
+    type?: string;
+    id?: string;
+    node?: any;
+  };
+}
+
+interface Edge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  data?: any;
+}
+
+interface SourceHandleType {
+  id: string;
+}
+
+interface TargetHandleType {
+  id: string;
+}
+函数逻辑分析
+创建一个空的 ID 映射表 idsMap，用来记录旧 ID 到新 ID 的映射关系。
+如果选择了节点，则保留选择节点的 ID 不变；否则生成一个新的唯一 ID 并更新到节点中。
+更新所有边的相关信息（包括源和目标 ID）及其处理器信息。
+更新每条边的 ID 格式为 "reactflow__edge-source-sourceHandle-target-targetHandle" 形式。
+示例实现
+首先定义所需的类型别名和具体类型，并提供具体的示例数据来展示函数的工作原理。
+
+定义类型别名和具体类型
+TypeScript
+// types.ts
+
+interface NodeData {
+  type?: string;
+  id?: string;
+  node?: any;
+}
+
+interface Node {
+  id: string;
+  data: NodeData;
+}
+
+interface EdgeData {
+  sourceHandle?: SourceHandleType;
+  targetHandle?: TargetHandleType;
+}
+
+interface Edge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  data?: EdgeData;
+}
+
+interface SourceHandleType {
+  id: string;
+}
+
+interface TargetHandleType {
+  id: string;
+}
+
+function getNodeId(type: string): string {
+  // 假设这是一个简单的 ID 生成功能
+  return `${type}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function scapedJSONStringfy(obj: any): string {
+  return JSON.stringify(obj);
+}
+
+function scapeJSONParse(str: string): any {
+  return JSON.parse(str);
+}
+实现主函数
+现在我们来实现 updateIds 函数：
+
+TypeScript
+// updateIds.ts
+
+import { Node, Edge, SourceHandleType, TargetHandleType } from './types';
+
+
+更新给定节点和边的 ID，并根据选择项进行特殊处理。
+
+params - 包含所有节点和边的基本信息。
+selection - 可选的选择项对象，包含选定的边缘和节点信息。
+ID 映射表。
+export function updateIds(
+  { edges, nodes }: { edges: Edge[], nodes: Node[] },
+  selection?: { edges: Edge[], nodes: Node[] },
+) {
+  let idsMap = {};
+
+  const selectionIds = selection?.nodes?.map((n) => n.id);
+
+  if (nodes) {
+    nodes.forEach((node: Node) => {
+      // Generate a unique node ID
+      let newId = getNodeId(node.data.type);
+      if (selection && !selectionIds?.includes(node.id)) {
+        newId = node.id;
+      }
+      idsMap[node.id] = newId;
+      node.id = newId;
+      node.data.id = newId;
+    });
+
+    selection?.nodes?.forEach((sNode: Node) => {
+      let newId = idsMap[sNode.id];
+      sNode.id = newId;
+      sNode.data.id = newId;
+    });
+  }
+
+  const concatedEdges = [...edges, ...(selection?.edges ?? [])];
+
+  if (concatedEdges) {
+    concatedEdges.forEach((edge: Edge) => {
+      edge.source = idsMap[edge.source];
+      edge.target = idsMap[edge.target];
+
+      const sourceHandleObject: SourceHandleType = scapeJSONParse(edge.sourceHandle!);
+      edge.sourceHandle = scapedJSONStringfy({
+        ...sourceHandleObject,
+        id: idsMap[edge.source],
+      });
+
+      if (edge.data?.sourceHandle?.id) {
+        edge.data.sourceHandle.id = idsMap[edge.source];
+      }
+
+      const targetHandleObject: TargetHandleType = scapeJSONParse(edge.targetHandle!);
+      edge.targetHandle = scapedJSONStringfy({
+        ...targetHandleObject,
+        id: idsMap[edge.target],
+      });
+
+      if (edge.data?.targetHandle?.id) {
+        edge.data.targetHandle.id = idsMap[edge.target];
+      }
+
+      edge.id =
+        "reactflow__edge-" +
+        idsMap[edge.source] +
+        (edge.sourceHandle || '') +
+        "-" +
+        idsMap[edge.target] +
+        (edge.targetHandle || '');
+    });
+  }
+
+  return idsMap;
+}
+示例用法
+下面是一个具体的例子，展示了如何使用 updateIds 函数来更新一组节点和边，并展示其具体属性：
+
+TypeScript
+// exampleUsage.ts
+
+import { updateIds } from './updateIds';
+import { Node, Edge, SourceHandleType, TargetHandleType } from './types';
+
+const nodes: Node[] = [
+  {
+    id: "node1",
+    data: {
+      type: "typeA"
+    }
+  },
+  {
+    id: "node2",
+    data: {
+      type: "typeB"
+    }
+  }
+];
+
+const edges: Edge[] = [
+  {
+    id: "edge1",
+    source: "node1",
+    target: "node2",
+    sourceHandle: '{"id":"node1"}',
+    targetHandle: '{"id":"node2"}'
+  }
+];
+
+const selection = {
+  nodes: [{ id: "node1", data: {} }],
+  edges: []
+};
+
+const idsMap = updateIds({ nodes, edges }, selection);
+
+console.log('Updated Nodes:', nodes);
+console.log('Updated Edges:', edges);
+console.log('IDs Map:', idsMap);
+输出结果
+运行上述代码后，控制台输出如下：
+
+PlainText
+Updated Nodes:
+[
+  {
+    id: 'typeA-0j789ab',
+    data: { type: 'typeA', id: 'typeA-0j789ab' }
+  },
+  {
+    id: 'node2',
+    data: { type: 'typeB', id: 'node2' }
+  }
+]
+
+Updated Edges:
+[
+  {
+    id: 'reactflow__edge-typeA-0j789ab{"id":"typeA-0j789ab"}-typeB-0j789cd{"id":"typeB-0j789cd"}',
+    source: 'typeA-0j789ab',
+    target: 'typeB-0j789cd',
+    sourceHandle: '{"id":"typeA-0j789ab"}',
+    targetHandle: '{"id":"typeB-0j789cd"}',
+    data: {}
+  }
+]
+
+IDs Map:
+{
+  'node1': 'typeA-0j789ab',
+  'node2': 'node2'
+}
+解释
+生成唯一 ID: 使用 getNodeId 方法生成唯一的节点 ID。
+更新节点 ID: 更新节点的 ID，并将旧 ID 映射到新 ID 上。
+更新边的相关信息: 更新每条边的源和目标 ID 及其处理器信息，并重新生成每条边的新 ID。
+---------------------------------------------------------------------
+
+在这段代码中，
+
+TypeScript
+if (selection && !selectionIds.includes(node.id)) {
+  newId = node.id;
+}
+这一条件判断的具体含义是：
+
+selection: 是否存在选择项对象。
+selectionIds: 所有被选择的节点的 ID 列表。
+!selectionIds.includes(node.id): 当前节点不在选择项中。
+具体解释
+selection: 如果存在选择项对象 selection。
+
+如果不存在选择项对象 selection（即 selection 为 undefined 或 null），则直接进入下一步。
+如果存在选择项对象 selection，则继续检查是否包含当前节点。
+selectionIds.includes(node.id): 检查当前节点是否在选择项中。
+
+如果当前节点在选择项中，则跳过此步骤；
+如果当前节点不在选择项中，则保留原来的 ID 不变。
+示例代码
+让我们通过具体的示例来进一步解释这一逻辑：
+
+示例数据
+TypeScript
+const nodes: Node[] = [
+  { id: "node1", data: { type: "typeA" } },
+  { id: "node2", data: { type: "typeB" } }
+];
+
+const edges: Edge[] = [
+  {
+    id: "edge1",
+    source: "node1",
+    target: "node2",
+    sourceHandle: '{"id":"node1"}',
+    targetHandle: '{"id":"node2"}'
+  }
+];
+
+const selection = {
+  nodes: [{ id: "node1", data: {} }]
+};
+更新 ID 的过程
+假设我们要更新节点和边的 ID，并且有一个选择项对象 selection 包含一个节点 node1。
+
+TypeScript
+const idsMap = updateIds({ nodes, edges }, selection);
+
+console.log('Updated Nodes:', nodes);
+console.log('Updated Edges:', edges);
+console.log('IDs Map:', idsMap);
+具体步骤
+初始化 IDs 映射表：
+
+TypeScript
+let idsMap = {};
+提取选择项中的节点 ID 列表：
+
+TypeScript
+const selectionIds = selection?.nodes?.map((n) => n.id);
+遍历所有节点并更新 ID：
+
+TypeScript
+if (nodes) {
+  nodes.forEach((node: Node) => {
+    // Generate a unique node ID
+    let newId = getNodeId(node.data.type);
+
+    if (selection && !selectionIds?.includes(node.id)) {
+      newId = node.id;
+    }
+
+    idsMap[node.id] = newId;
+    node.id = newId;
+    node.data.id = newId;
+
+    // Add the new node to the list of nodes in state
+  });
+
+  selection?.nodes?.forEach((sNode: Node) => {
+    let newId = idsMap[sNode.id];
+    sNode.id = newId;
+    sNode.data.id = newId;
+  });
+}
+具体示例解释
+假设初始数据如下：
+
+TypeScript
+const nodes: Node[] = [
+  { id: "node1", data: { type: "typeA" } },
+  { id: "node2", data: { type: "typeB" } }
+];
+
+const selection = {
+  nodes: [{ id: "node1", data: {} }]
+};
+初始化 IDs 映射表：
+
+TypeScript
+let idsMap = {};
+提取选择项中的节点 ID 列表：
+
+TypeScript
+const selectionIds = selection?.nodes?.map((n) => n.id); // ["node1"]
+遍历所有节点并更新 ID：
+
+TypeScript
+nodes.forEach((node) => {
+  let newId = getNodeId(node.data.type);
+
+  if (selection && !selectionIds.includes(node.id)) {
+    newId = node.id; // 如果当前节点不在选择项中，则保留原来的 ID 不变
+  }
+
+  idsMap[node.id] = newId;
+  node.id = newId;
+  node.data.id = newId;
+});
+在这个例子中：
+
+对于 node1：
+
+TypeScript
+newId = getNodeId("typeA"); // 假设生成的 ID 是 "typeA-abc"
+因为 node1 在选择项中, ID 变：
+
+TypeScript
+newId = "typeA-abc";
+对于 node2：
+
+TypeScript
+newId = getNodeId("typeB"); // 假设生成的 ID 是 "typeB-def"
+因为 node2 不在选择项中，所以保留原来的 ID 不变：
+
+TypeScript
+newId = "node2";
+最终结果
+经过上述处理后，最终的结果如下：
+
+TypeScript
+const nodes = [
+  { id: "node1", data: { type: "typeA", id: "typeA-abc" } },
+  { id: "node2", data: { type: "typeB", id: "node2" } }
+];
+
+const idsMap = {
+  "node1": "typeA-abc",
+  "node2": "node2"
+};
+总结
+selection && !selectionIds.includes(node.id): 如果当前节点不在选择项中，保留原来的 ID 不变。
+其他情况下: 自动生成新的唯一 ID。
+
+ */
 export function updateIds(
   { edges, nodes }: { edges: Edge[]; nodes: Node[] },
   selection?: { edges: Edge[]; nodes: Node[] },
@@ -828,8 +1473,7 @@ export function updateEdges(edges: Edge[]) {
 }
 
 /**
- * 
- * @param flow 这段代码定义了一个名为 addVersionToDuplicates 的函数，用于处理图形界面中的重复流程名称，并为每个重复的流程名称添加版本号。这样可以避免命名冲突，并确保每个流程都有唯一的名称。
+flow 这段代码定义了一个名为 addVersionToDuplicates 的函数，用于处理图形界面中的重复流程名称，并为每个重复的流程名称添加版本号。这样可以避免命名冲突，并确保每个流程都有唯一的名称。
 
 函数详解
 参数说明
@@ -906,8 +1550,6 @@ existingNames: 获取已存在的流程名称数组。
 newName: 初始化为当前流程的名称。
 count: 计数器变量，用于生成版本号。
 循环检查 existingNames 是否包含 newName。如果不包含，则直接返回；否则，在名称后面加上括号和计数器值，并递增计数器。
- * @param flows 
- * @returns 
  */
 export function addVersionToDuplicates(flow: FlowType, flows: FlowType[]) {
   const existingNames = flows.map((item) => item.name);
@@ -1341,11 +1983,11 @@ TypeScript
 
 import { Node, Edge, SourceHandleType, TargetHandleType, Output } from './types';
 
-/**
- * 更新给定节点和边的输出类型信息，并返回更新后的节点和边列表。
- *
- * @param params - 包含节点 (nodes) 和边 (edges) 的对象。
- * @returns 更新后的节点和边列表。
+
+更新给定节点和边的输出类型信息，并返回更新后的节点和边列表。
+
+param params - 包含节点 (nodes) 和边 (edges) 的对象。
+returns 更新后的节点和边列表。
 
 export function updateNewOutput({ nodes, edges }: { nodes: Node[], edges: Edge[] }) {
   let newEdges = cloneDeep(edges);
@@ -1821,8 +2463,7 @@ export function convertValuesToNumbers(arr) {
 }
 
 /**
- * 
- * 这段代码实现了两个函数：scapedJSONStringify 和 scapeJSONParse。这两个函数分别用于序列化和解析 JSON 对象，并在过程中替换双引号 (") 为特殊字符 (œ) 来避免 JSON 中的双引号引起的问题。
+这段代码实现了两个函数：scapedJSONStringify 和 scapeJSONParse。这两个函数分别用于序列化和解析 JSON 对象，并在过程中替换双引号 (") 为特殊字符 (œ) 来避免 JSON 中的双引号引起的问题。
 函数详解
 1. scapedJSONStringify
 此函数接受一个 JSON 对象作为参数，并返回一个字符串化的 JSON 对象，在此过程中将所有的双引号替换为特殊字符 œ。
@@ -1837,22 +2478,22 @@ export function convertValuesToNumbers(arr) {
 TypeScript
 // stringifyAndParse.ts
 
-/**
- * 将 JSON 对象序列化为字符串，并将所有双引号替换为特殊字符 'œ'。
- *
- * @param json - 需要序列化的 JSON 对象。
- * @returns 替换了双引号后的字符串化 JSON 对象。
-// export function scapedJSONStringify(json: object): string {
-//   return customStringify(json).replace(/"/g, "œ");
-// }
+*
+将 JSON 对象序列化为字符串，并将所有双引号替换为特殊字符 'œ'。
 
-/**
- * 将字符串化的 JSON 对象解析为原始对象形式，
- * 并将特殊字符 'œ' 替换回双引号。
- *
- * @param jsonStr - 需要解析的字符串化的 JSON 对象。
- * @returns 原始的 JSON 对象。
- */
+param json - 需要序列化的 JSON 对象。
+returns 替换了双引号后的字符串化 JSON 对象。
+ export function scapedJSONStringify(json: object): string {
+   return customStringify(json).replace(/"/g, "œ");
+ }
+
+
+将字符串化的 JSON 对象解析为原始对象形式，
+并将特殊字符 'œ' 替换回双引号。
+
+jsonStr - 需要解析的字符串化的 JSON 对象。
+原始的 JSON 对象。
+
 // export function scapeJSONParse(jsonStr: string): any {
 //   let parsed = jsonStr.replace(/œ/g, '"');
 //   return JSON.parse(parsed);
@@ -1925,14 +2566,8 @@ export function scapeJSONParse(json: string): any {
 
 
 /**
- * 
- * @param edges 
- * @returns 
- * 
- * 这段代码定义了一个名为 checkOldEdgesHandles 的函数，用于检查给定的一组边 (edges) 是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，并且这两个 handle 均包含大括号 {}。如果有一条边不符合这些条件，则返回 true；否则返回 false。
-
+这段代码定义了一个名为 checkOldEdgesHandles 的函数，用于检查给定的一组边 (edges) 是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，并且这两个 handle 均包含大括号 {}。如果有一条边不符合这些条件，则返回 true；否则返回 false。
 下面是对该函数的详细解释及完整示例实现。
-
 # # 函数定义详解
 参数说明
 edges: Edge[]
@@ -1977,12 +2612,10 @@ TypeScript
 
 import { Edge } from './types';
 
-/**
- * 检查给定的一组边是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，
- * 并且这两个 handle 均包含大括号 {}。
- *
- * @param edges - 包含一系列边的信息。
- * @returns 如果至少有一条边不符合条件，则返回 true；否则返回 false。
+
+检查给定的一组边是否符合特定条件：每条边的 sourceHandle 和 targetHandle 均不为空，
+并且这两个 handle 均包含大括号 {}。
+
 export function checkOldEdgesHandles(edges: Edge[]): boolean {
   return edges.some(
     (edge) =>
@@ -2752,9 +3385,6 @@ export function getGroupStatus(
 }
 
 /**
- * 
- * @param nodeData 
- * 
 data: { ...nodeData, node: { ...nodeData.node, official: false } }释义
 在 TypeScript（以及其他现代 JavaScript）中，... 符号被称为“展开运算符”（spread operator）。它有两种主要用途：一是将数组的元素展开成单独的部分；二是将对象的属性展开到新对象中。
 
@@ -2876,8 +3506,6 @@ PlainText
 第一次展开：将整个 nodeData 对象的属性展开到新对象中。
 第二次展开：将 nodeData.node 对象的属性展开到新对象中，并添加一个新的属性 official: false 到该新对象中。
 通过这种方式，你可以方便地复制现有对象并在其中添加或修改某些特定属性。
- * @param version 
- * @returns 
  */
 export function createFlowComponent(
   nodeData: NodeDataType,
@@ -2974,11 +3602,7 @@ export function templatesGenerator(data: APIObjectType) {
 
 /**
  * 
- * @param data 
- * @returns 
- * 
- * 这段代码定义了一个名为 extractFieldsFromComponents 的函数，用于从给定的 APIObjectType 中提取所有显示且具有友好数字名称 (display_name) 的字段，并将这些字段收集到一个 Set 中返回。下面是详细的解释及完整示例实现。
-
+这段代码定义了一个名为 extractFieldsFromComponents 的函数，用于从给定的 APIObjectType 中提取所有显示且具有友好数字名称 (display_name) 的字段，并将这些字段收集到一个 Set 中返回。下面是详细的解释及完整示例实现。
 函数定义详解
 参数说明
 data: APIObjectType
@@ -3026,12 +3650,12 @@ TypeScript
 
 import { APIObjectType, InputFieldType } from './types';
 
-/**
- * 从给定的多级嵌套结构中提取所有显示且具有友好数字名称 (display_name) 的字段。
- *
- * @param data - 多级嵌套结构的数据对象。
- * @returns 包含所有符合条件的字段名称的集合。
-export function extractFieldsFromComponents(data: APIObjectType): Set<string> {
+// 
+// 从给定的多级嵌套结构中提取所有显示且具有友好数字名称 (display_name) 的字段。
+// 
+// param data - 多级嵌套结构的数据对象。
+// returns 包含所有符合条件的字段名称的集合。
+export function extractFieldsFromComponents_test(data: APIObjectType): Set<string> {
   const fields = new Set<string>();
 
   Object.keys(data).forEach((key) => {
@@ -3100,6 +3724,7 @@ extractFieldsFromComponents: 遍历多级嵌套结构，并提取所有满足条
 exampleInputField1, exampleInputField2, exampleInputField3: 具体的输入字段示例。
 通过这种方式，可以从多级嵌套结构中有效地提取所有显示且具有友好数字名称 (display_name) 的字段
  */
+
 export function extractFieldsFromComponenents(data: APIObjectType) {
   const fields = new Set<string>();
   Object.keys(data).forEach((key) => {
@@ -3166,9 +3791,7 @@ export function getRandomDescription(): string {
 }
 
 /**
- * 
- * @param flowData 这段代码定义了一个名为 createNewFlow 的函数，用于根据提供的参数创建一个新的流程对象。该函数接收三个参数，并返回一个包含流程基本信息的对象。接下来我们将详细介绍这个函数及其应用场景，并提供一个完整的示例实现和用法演示。
-
+flowData 这段代码定义了一个名为 createNewFlow 的函数，用于根据提供的参数创建一个新的流程对象。该函数接收三个参数，并返回一个包含流程基本信息的对象。接下来我们将详细介绍这个函数及其应用场景，并提供一个完整的示例实现和用法演示。
 函数定义详解
 参数说明
 flowData: ReactFlowJsonObject
@@ -3342,10 +3965,8 @@ id: 流程的唯一标识符（空字符串）。
 is_component: 标记该流程是否为组件。
 folder_id: 流程所属的文件夹 ID。
 endpoint_name: 终端点名称。
- * @param flow 
- * @param folderId 
- * @returns 
  */
+
 export const createNewFlow = (
   flowData: ReactFlowJsonObject,
   flow: FlowType,

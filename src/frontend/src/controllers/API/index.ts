@@ -183,6 +183,123 @@ export async function updateFlowInDatabase(
  *
  * @returns {Promise<any>} The flows data.
  * @throws Will throw an error if reading fails.
+ * 
+ 这段代码定义了一个异步函数 readFlowsFromDatabase，用于从数据库读取流数据。下面是详细的分析和解释：
+
+代码详解
+函数定义
+TypeScript
+export async function readFlowsFromDatabase() {
+  try {
+    const response = await api.get(`${BASE_URL_API}flows/`);
+    if (response?.status !== 200) {
+      throw new Error(`HTTP error! status: ${response?.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+逐行解释
+导出异步函数:
+
+TypeScript
+export async function readFlowsFromDatabase() {
+async 关键字表明这是一个异步函数。
+export 关键字使得此函数可以在其他模块中导入和使用。
+尝试请求数据:
+
+TypeScript
+try {
+  const response = await api.get(`${BASE_URL_API}flows/`);
+try 块用于捕获可能出现的异常。
+await 关键字等待 API 请求的结果。
+api.get 发送 GET 请求到指定 URL。
+${BASE_URL_API}flows/ 构造请求路径。
+检查 HTTP 状态码:
+
+TypeScript
+  if (response?.status !== 200) {
+    throw new Error(`HTTP error! status: ${response?.status}`);
+  }
+response?.status 获取响应的状态码。
+如果状态码不是 200（成功），则抛出一个带有错误信息的新错误对象。
+返回数据:
+
+TypeScript
+  return response.data;
+返回响应中的数据部分。
+捕获异常并重新抛出:
+
+TypeScript
+} catch (error) {
+  console.error(error);
+  throw error;
+}
+catch 块捕获 try 块中抛出的异常。
+console.error(error) 打印错误信息到控制台。
+throw error 重新抛出错误，以便外部可以继续处理。
+示例应用
+假设我们有一个简单的应用程序，使用这个函数从数据库读取流数据，并处理结果。
+
+定义类型和接口
+TypeScript
+interface ApiResponse {
+  status: number;
+  data: any;
+}
+
+const BASE_URL_API = 'https://example.com/api/';
+const api = {
+  get(url: string): Promise<ApiResponse> {
+    return fetch(url)
+      .then(response => ({
+        status: response.status,
+        data: response.json()
+      }))
+      .catch(error => {
+        console.error('API request failed:', error);
+        throw error;
+      });
+  }
+};
+调用函数
+TypeScript
+(async () => {
+  try {
+    const flows = await readFlowsFromDatabase();
+    console.log('Flows:', flows);
+  } catch (error) {
+    console.error('Failed to read flows:', error);
+  }
+})();
+解释
+定义类型和接口:
+
+ApiResponse 接口定义了响应对象的结构。
+api 对象封装了 fetch 请求，并返回一个包含状态码和 JSON 数据的响应对象。
+调用函数:
+
+使用立即执行的异步函数表达式 (async () => {})()。
+try-catch 结构处理可能发生的异常。
+成功时打印流数据。
+异常时打印错误信息。
+总结
+这段代码的主要作用是：
+
+发送 GET 请求:
+
+从指定 URL 获取流数据。
+检查 HTTP 状态码:
+
+如果状态码不是 200，则抛出错误。
+返回响应数据:
+
+返回响应中的数据部分。
+捕获并处理异常:
+
+捕获请求过程中的异常，并重新抛出以便外部处理。
  */
 export async function readFlowsFromDatabase() {
   try {

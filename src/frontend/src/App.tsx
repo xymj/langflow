@@ -1129,6 +1129,154 @@ export default function App() {
   }, [dark]);
 
   useEffect(() => {
+    
+    /**
+     * AbortController 是一个 Web API，用于取消正在进行的异步任务，比如 AJAX 请求或其他长时间运行的任务。这对于在某些条件下提前终止请求非常有用，特别是在用户交互或页面卸载时。
+
+# # 创建 AbortController 实例
+JavaScript
+const abortController = new AbortController();
+# # 功能介绍
+##1. AbortController 类型
+构造函数: new AbortController()
+创建一个新的 AbortController 实例。
+##2. 属性
+signal: 信号对象，用于检测是否应该取消任务。
+abort(): 方法，用于显式地取消任务。
+##3. 使用场景
+3.1 发起请求时传递信号
+JavaScript
+fetch(url, { signal: abortController.signal })
+  .then(response => {
+    // 处理响应
+  })
+  .catch(error => {
+    if (error.name === 'AbortError') {
+      console.log('Request was aborted');
+    } else {
+      console.error('An unexpected error occurred:', error);
+    }
+  });
+3.2 在适当的时候取消请求
+JavaScript
+// 在某个条件满足时取消请求
+if (shouldCancel) {
+  abortController.abort();
+}
+##4. 综合示例
+假设我们需要在发起 AJAX 请求时能够取消请求，并且能够在特定条件下取消请求。
+
+4.1 创建 AbortController 实例
+JavaScript
+const abortController = new AbortController();
+4.2 发起请求并传递信号
+JavaScript
+function fetchData(url: string) {
+  fetch(url, { signal: abortController.signal })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Data fetched successfully:', data);
+    })
+    .catch(error => {
+      if (error.name === 'AbortError') {
+        console.log('Request was aborted');
+      } else {
+        console.error('An unexpected error occurred:', error);
+      }
+    });
+}
+4.3 在适当的时候取消请求
+JavaScript
+function cancelFetch() {
+  abortController.abort();
+  console.log('Fetch request canceled');
+}
+4.4 完整组件示例
+假设我们需要在用户点击按钮时发起请求，并且可以在另一个按钮上取消请求：
+
+JavaScript
+import React, { useState } from 'react';
+
+function FetchDataWithAbort() {
+  const [data, setData] = useState(null);
+  const [shouldCancel, setShouldCancel] = useState(false);
+
+  const abortController = new AbortController();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('https://api.example.com/data', { signal: abortController.signal });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const jsonData = await response.json();
+        setData(jsonData);
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Request was aborted');
+        } else {
+          console.error('An unexpected error occurred:', error);
+        }
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      abortController.abort(); // 页面卸载时取消请求
+    };
+  }, []);
+
+  function handleCancelClick() {
+    abortController.abort();
+    setShouldCancel(true);
+  }
+
+  return (
+    <div>
+      {data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      ) : (
+        shouldCancel ? (
+          <p>Request was canceled</p>
+        ) : (
+          <p>Loading...</p>
+        )
+      )}
+      {!shouldCancel && (
+        <button onClick={handleCancelClick}>Cancel Request</button>
+      )}
+    </div>
+  );
+}
+
+export default FetchDataWithAbort;
+解释
+初始化状态:
+
+JavaScript
+const [data, setData] = useState(null);
+const [shouldCancel, setShouldCancel] = useState(false);
+创建 AbortController 实例:
+
+JavaScript
+const abortController = new AbortController();
+使用 useEffect 发起请求:
+
+在组件挂载时发起请求。
+在组件卸载时取消请求。
+请求逻辑:
+
+使用 fetch 发起请求并传递信号。
+处理响应并将数据存储在状态中。
+捕获异常并检查是否为 AbortError。
+取消请求按钮:
+
+用户点击按钮时取消请求。
+更新状态以显示取消信息。
+通过这种方式，你可以方便地管理异步请求，并在必要时取消请求。
+     */
     const abortController = new AbortController();
     const isLoginPage = location.pathname.includes("login");
 
