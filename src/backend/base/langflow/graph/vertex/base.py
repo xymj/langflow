@@ -391,12 +391,15 @@ class Vertex:
         # First check if the input_value in _raw_params is not a vertex
         if not new_params:
             return
+
+        # 更新的参数中，在原始节点params内，如果有一个元素是节点类型，则返回不进行节点参数的更新
         if any(isinstance(self._raw_params.get(key), Vertex) for key in new_params):
             return
         if not overwrite:
             for key in new_params.copy():  # type: ignore
                 if key not in self._raw_params:
                     new_params.pop(key)  # type: ignore
+        # dict（字典）对象有一个update()方法，它的作用是将一个字典中的键值对更新到另一个字典中。如果目标字典中已经存在某个键，则会更新该键对应的值；如果不存在，则会添加新的键值对。
         self._raw_params.update(new_params)
         self.params = self._raw_params.copy()
         self.updated_raw_params = True

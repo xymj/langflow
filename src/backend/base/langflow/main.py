@@ -1,4 +1,6 @@
 import asyncio
+import multiprocessing
+import os
 import warnings
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -184,7 +186,7 @@ def setup_static_files(app: FastAPI, static_files_dir: Path):
 
 def get_static_files_dir():
     """Get the static files directory relative to Langflow's main.py file."""
-    frontend_path = Path(__file__).parent
+    frontend_path = Path(__file__).parent.parent.parent.parent
     return frontend_path / "frontend"
 
 
@@ -204,6 +206,8 @@ def setup_app(static_files_dir: Optional[Path] = None, backend_only: bool = Fals
 
 
 if __name__ == "__main__":
+    if os.name != 'nt':  # Only for non-Windows OSes
+        multiprocessing.set_start_method('forkserver', force=True)
     import uvicorn
 
     from langflow.__main__ import get_number_of_workers
